@@ -1,0 +1,8 @@
+port: "8080"
+
+db:
+  host: "localhost"
+  username: "postgres"
+  port: "5436"
+  dbname: "postgres"
+  sslmode: "disable"

@@ -3,7 +3,6 @@ package core
 type Trip struct {
 	TripId         int    `json:"-" db:"id"`
 	AdminId        int    `json:"adminId" db:"admin_id"`
-	TgAlias        string `json:"tgAlias" db:"tg_alias"`
 	IsPassanger    bool   `json:"isPassanger" db:"is_passanger" biding:"required"`
 	PlacesMax      int    `json:"placesMax" db:"places_max" biding:"required"`
 	PlacesTaken    int    `json:"placesTaken" db:"places_taken"`

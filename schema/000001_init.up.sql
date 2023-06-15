@@ -1,14 +1,14 @@
 create table users(
     id serial primary key,
-    f_name varchar(256) not null,
-    l_name varchar(256) not null,
+    first_name varchar(256) not null,
+    last_name varchar(256) not null,
 
     username varchar(256) not null unique,
     password_hash varchar(256) not null,
-    -- tg_id int,
-
     rating int,
-    num_people_rated int
+    num_people_rated int,
+
+    tg_id int
 );
 
 create table comments(
@@ -24,13 +24,12 @@ create table trips(
     id serial primary key,
     
     admin_id int not null,
-	tg_alias            varchar(256), 
 	is_passanger        boolean         not null,
 
 	places_max          int             not null,
     places_taken        int             not null,
 
-	chosen_date_time    varchar(256)    not null,
+	chosen_date_time    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
 	from_point          int             not null,
 	to_point            int             not null,

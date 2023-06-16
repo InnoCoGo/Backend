@@ -8,10 +8,10 @@ import (
 type Authorization interface {
 	CreateUser(user core.User) (int, error)
 
-	GenerateToken(username, password string) (string, error)
+	GenerateToken(userId int) (string, error)
 	ParseToken(accessToken string) (int, error)
 
-	GetTgUser(user core.User) (int, error)
+	GetUserId(user core.User) (int, error)
 }
 
 type User interface {

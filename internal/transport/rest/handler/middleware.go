@@ -18,47 +18,32 @@ const (
 )
 
 func (h *Handler) userIdentity(c *gin.Context) {
+	var token string
 	header := c.GetHeader(AuthorizationHeader)
-	if header == "" {
-		newErrorResponse(c, http.StatusUnauthorized, "empty header!")
-		return
-	}
-	headerParts := strings.Split(header, " ")
-	if len(headerParts) != 2 {
-		newErrorResponse(c, http.StatusUnauthorized, "incorrect passing of header!")
-		return
+	if header != "" {
+		headerParts := strings.Split(header, " ")
+		if len(headerParts) != 2 {
+			newErrorResponse(c, http.StatusUnauthorized, "incorrect passing of header!")
+			return
+		}
+		token = headerParts[1]
+	} else {
+		url := c.Request.URL
+		token = url.Query().Get("token")
+		if len(token) == 0 {
+			newErrorResponse(c, http.StatusUnauthorized, "empty url token param")
+			return
+		}
 	}
 
-	userId, err := h.services.Authorization.ParseToken(headerParts[1])
+	id, err := h.services.Authorization.ParseToken(token)
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	c.Set(userCtx, userId)
+	c.Set(userCtx, id)
 }
-
-// func (h *Handler) tgUserIdentity(c *gin.Context) {
-
-// 	url := c.Request.URL
-// 	token := url.Query().Get("token")
-// 	if len(token) == 0 {
-// 		newErrorResponse(c, http.StatusUnauthorized, "empty tg token")
-// 		return
-// 	}
-
-// 	userId, err := h.services.Authorization.ParseTgToken(token) // TODO!!!
-// 	if err != nil {
-// 		newErrorResponse(c, http.StatusUnauthorized, err.Error())
-// 		return
-// 	}
-
-// 	c.Set(userCtx, userId)
-// }
-
-// func getUserIdentity(c *gin.Context) (int, string, error) {
-// 	userId, ok := c.Get(userCtx)
-// }
 
 func getUserId(c *gin.Context) (int, error) {
 	id, ok := c.Get(userCtx)

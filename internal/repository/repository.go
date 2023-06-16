@@ -7,8 +7,7 @@ import (
 
 type Authorization interface {
 	CreateUser(user core.User) (int, error)
-	GetUserId(username, passwordHash string) (int, error)
-	GetTgUser(username string, tgId int) (int, error)
+	GetUserId(user core.User) (int, error)
 	// LoginTg(core.User) (string, error)
 }
 type User interface {

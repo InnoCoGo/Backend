@@ -25,17 +25,31 @@ func (r *AuthPostgres) CreateUser(user core.User) (int, error) {
 	return id, nil
 }
 
+type getUserIdRes struct {
+	Id       int    `db:"id"`
+	Username string `db:"username"`
+}
+
 func (r *AuthPostgres) GetUserId(user core.User) (int, error) {
 	var id int
+
 	var query string
 	var err error
+	var userRes getUserIdRes
 
 	if user.PasswordOrHash != "" {
 		query = fmt.Sprintf(`SELECT id FROM %s WHERE username=$1 and password_hash=$2`, usersTable)
 		err = r.db.Get(&id, query, user.Username, user.PasswordOrHash)
 	} else {
-		query = fmt.Sprintf(`SELECT id FROM %s WHERE username=$1 and tg_id=$2`, usersTable)
-		err = r.db.Get(&id, query, user.Username, user.TgId)
+		query = fmt.Sprintf(`SELECT id, username FROM %s WHERE tg_id=$1`, usersTable)
+		err = r.db.Get(&userRes, query, user.TgId)
+		if err == nil { // WARNING! UPDATE can be done through another interface
+			id = userRes.Id
+			if userRes.Username != user.Username {
+				query = fmt.Sprintf(`UPDATE %s SET username=$1 WHERE tg_id=$2`, usersTable)
+				_, err = r.db.Exec(query, user.Username, user.TgId)
+			}
+		}
 	}
 	return id, err
 }

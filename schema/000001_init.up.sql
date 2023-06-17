@@ -8,7 +8,7 @@ create table users(
     rating int,
     num_people_rated int,
 
-    tg_id int
+    tg_id int unique
 );
 
 create table comments(

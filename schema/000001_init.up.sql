@@ -11,13 +11,13 @@ create table users(
     tg_id int unique
 );
 
-create table comments(
-    from_id int not null,
-    to_id int not null,
+create table users_trips(
+    user_id int not null,
+    trip_id int not null,
 
-    primary key(from_id, to_id),
-    foreign key(from_id) references users(id),
-    foreign key(to_id) references users(id)
+    primary key(user_id, trip_id), 
+    foreign key(user_id) references users(id),
+    foreign key(trip_id) references trips(id)
 );
 
 create table trips(
@@ -37,11 +37,11 @@ create table trips(
 	description         varchar(256)
 );
 
-create table users_trips(
-    user_id int not null,
-    trip_id int not null,
+create table comments(
+    from_id int not null,
+    to_id int not null,
 
-    primary key(user_id, trip_id), 
-    foreign key(user_id) references users(id),
-    foreign key(trip_id) references trips(id)
+    primary key(from_id, to_id),
+    foreign key(from_id) references users(id),
+    foreign key(to_id) references users(id)
 );

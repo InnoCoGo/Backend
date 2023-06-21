@@ -16,6 +16,9 @@ type User interface {
 
 type Trip interface {
 	Create(trip core.Trip) (int, error)
+	GetById(userId, tripId int) (core.Trip, error)
+	Delete(userId, tripId int) error
+	Update(trip core.Trip) error
 }
 
 type Repository struct {

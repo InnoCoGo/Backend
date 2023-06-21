@@ -7,11 +7,12 @@ import (
 
 type Authorization interface {
 	CreateUser(user core.User) (int, error)
+	GetUserId(user core.User) (int, error)
 
 	GenerateToken(userId int) (string, error)
 	ParseToken(accessToken string) (int, error)
 
-	GetUserId(user core.User) (int, error)
+	VerifyTgAuthData(authData map[string]interface{}, keyword string) (bool, error) // WARNING! only error or bool should be returned
 }
 
 type User interface {
@@ -21,6 +22,8 @@ type User interface {
 
 type Trip interface {
 	Create(trip core.Trip) (int, error)
+	GetById(userId, tripId int) (core.Trip, error)
+	Delete(userId, tripId int) error
 }
 
 type Service struct {

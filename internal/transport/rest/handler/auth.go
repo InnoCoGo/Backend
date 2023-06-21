@@ -1,17 +1,8 @@
 package handler
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
-	"fmt"
-	"hash"
 	"net/http"
-	"os"
-	"sort"
-	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/itoqsky/InnoCoTravel_backend/internal/core"
@@ -69,30 +60,6 @@ func (h *Handler) signIn(c *gin.Context) {
 	})
 }
 
-type tgUserWebApp struct {
-	User     string `json:"user" binding:"required"`
-	AuthDate int    `json:"auth_date" binding:"required"`
-	QueryId  string `json:"query_id" binding:"required"`
-	Hash     string `json:"hash" binding:"required"`
-}
-
-//	type userFieldWA struct {
-//		Id           int    `json:"id" binding:"required"`
-//		FirstName    string `json:"first_name" binding:"required"`
-//		LastName     string `json:"last_name" binding:"required"`
-//		Username     string `json:"username" binding:"required"`
-//		LanguageCode string `json:"language_code" binding:"required"`
-//	}
-type tgUserWebSite struct {
-	Id        int    `json:"id" binding:"required"`
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
-	Username  string `json:"username" binding:"required"`
-	PhotoUrl  string `json:"photo_url" binding:"required"`
-	AuthDate  int    `json:"auth_date" binding:"required"`
-	Hash      string `json:"hash" binding:"required"`
-}
-
 type TgUserCredentials struct {
 	Id        int    `json:"id"`
 	FirstName string `json:"first_name"`
@@ -101,6 +68,23 @@ type TgUserCredentials struct {
 	PhotoUrl  string `json:"photo_url"`
 	QueryId   string `json:"query_id"`
 	User      string `json:"user"`
+	AuthDate  int    `json:"auth_date" binding:"required"`
+	Hash      string `json:"hash" binding:"required"`
+}
+
+type tgUserWebApp struct {
+	User     string `json:"user" binding:"required"`
+	AuthDate int    `json:"auth_date" binding:"required"`
+	QueryId  string `json:"query_id" binding:"required"`
+	Hash     string `json:"hash" binding:"required"`
+}
+
+type tgUserWebSite struct {
+	Id        int    `json:"id" binding:"required"`
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	Username  string `json:"username" binding:"required"`
+	PhotoUrl  string `json:"photo_url" binding:"required"`
 	AuthDate  int    `json:"auth_date" binding:"required"`
 	Hash      string `json:"hash" binding:"required"`
 }
@@ -192,7 +176,7 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 		return
 	}
 
-	ok, err := verifyTgAuthData(authData, keyword)
+	ok, err := h.services.Authorization.VerifyTgAuthData(authData, keyword) // Tg auth verification
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -203,7 +187,7 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 		return
 	}
 
-	id, err := h.services.Authorization.GetUserId(user)
+	id, err := h.services.Authorization.GetUserId(user) // Check if the user in the db
 	if err != nil {
 		id, err = h.services.Authorization.CreateUser(user)
 		if err != nil {
@@ -221,47 +205,4 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"token": token,
 	})
-}
-
-func verifyTgAuthData(authData map[string]interface{}, keyword string) (bool, error) {
-	checkHash, _ := authData["hash"].(string)
-	authData["auth_date"] = int(authData["auth_date"].(float64))
-
-	authIdWS, ok := authData["id"].(float64)
-	if ok {
-		authData["id"] = int(authIdWS)
-	}
-
-	delete(authData, "hash")
-
-	var dataCheckArr []string
-	for key, val := range authData {
-		dataCheckArr = append(dataCheckArr, fmt.Sprintf("%s=%v", key, val)) // WARNING!
-	}
-	sort.Strings(dataCheckArr)
-	dataCheckString := strings.Join(dataCheckArr, "\n")
-
-	var h hash.Hash
-	if keyword == "" {
-		h = sha256.New()
-	} else {
-		h = hmac.New(sha256.New, []byte(keyword))
-	}
-	h.Write([]byte(os.Getenv("BOT_TOKEN")))
-	secretKey := h.Sum(nil)
-
-	h = hmac.New(sha256.New, secretKey)
-	h.Write([]byte(dataCheckString))
-	hash := hex.EncodeToString(h.Sum(nil))
-
-	if hash != checkHash {
-		return false, fmt.Errorf("the hashes don't match")
-	}
-
-	authDate, _ := authData["auth_date"].(int)
-	if time.Now().Unix()-int64(authDate) > 86400 {
-		return false, fmt.Errorf("expired auth date")
-	}
-
-	return true, nil
 }

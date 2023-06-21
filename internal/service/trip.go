@@ -16,3 +16,15 @@ func NewTripService(repo repository.Trip) *TripService {
 func (s *TripService) Create(trip core.Trip) (int, error) {
 	return s.repo.Create(trip)
 }
+
+func (s *TripService) GetById(userId, tripId int) (core.Trip, error) {
+	return s.repo.GetById(userId, tripId)
+}
+
+func (s *TripService) Delete(userId, tripId int) error {
+	return s.repo.Delete(userId, tripId)
+}
+
+func (s *TripService) Update(trip core.Trip) error {
+	return s.repo.Update(trip)
+}

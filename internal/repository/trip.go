@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/itoqsky/InnoCoTravel_backend/internal/core"
@@ -38,4 +39,68 @@ func (r *TripPostgres) Create(trip core.Trip) (int, error) {
 	}
 
 	return id, tx.Commit()
+}
+
+func (r *TripPostgres) GetById(userId, tripId int) (core.Trip, error) {
+	query := fmt.Sprintf(`SELECT
+							t.id,
+							t.admin_id,
+							t.is_passanger,
+							t.places_max,
+							t.places_taken,
+							t.chosen_date_time,
+							t.from_point,
+							t.to_point,
+							t.description
+						FROM 
+							%s t
+						INNER JOIN %s ut
+							ON  ut.trip_id = t.id
+						WHERE ut.user_id=$1
+							AND ut.trip_id=$2
+	`, tripsTable, usersTripsTable)
+	var trip core.Trip
+	err := r.db.Get(&trip, query, userId, tripId)
+
+	return trip, err
+}
+
+func (r *TripPostgres) Delete(userId, tripId int) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	usersTripsQuery := fmt.Sprintf(`DELETE FROM %s ut WHERE ut.user_id=$1 AND ut.trip_id=$2`, usersTripsTable)
+	_, err = tx.Exec(usersTripsQuery, userId, tripId)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	var nextAdmin int
+	nextAdminQuery := fmt.Sprintf(`SELECT ut.user_id FROM %s ut WHERE ut.trip_id=$1`, usersTripsQuery)
+	row := tx.QueryRow(nextAdminQuery, tripId)
+	if err := row.Scan(&nextAdmin); err != nil {
+		if err == sql.ErrNoRows {
+			tripQuery := fmt.Sprintf(`DELETE FROM %s t WHERE t.id=$1 AND t.places_taken=0`, tripsTable)
+			_, err = tx.Exec(tripQuery, tripId)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		} else {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+func (r *TripPostgres) Update(trip core.Trip) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+
 }

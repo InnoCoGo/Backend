@@ -30,10 +30,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			trip.POST("/", h.createTrip)
 			trip.GET("/:id", h.getTrip)
-			trip.PUT("/:id", h.updateTrip)
 			trip.DELETE("/:id", h.deleteTrip)
-			// trip.POST("/join", h.joinTrip)
+			// trip.PUT("/:id", h.updateTrip)
 			// trip.GET("/", h.getJoinedTrips)
+			// trip.POST("/join", h.joinTrip)
 			trip.GET("/adjacent", h.getAdjacentTrips)
 		}
 	}

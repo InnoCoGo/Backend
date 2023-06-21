@@ -26,7 +26,7 @@ func (h *Handler) createTrip(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"tripId": tripId,
+		"trip_id": tripId,
 	})
 }
 
@@ -54,33 +54,58 @@ func (h *Handler) deleteTrip(c *gin.Context) {
 		return
 	}
 
-	if err := h.services.Trip.Delete(userId, tripId); err != nil {
+	newAdminId, err := h.services.Trip.Delete(userId, tripId)
+	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, statusOkResponse{"ok"})
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"new_admin_id": newAdminId,
+	})
 }
 
-func (h *Handler) updateTrip(c *gin.Context) {
-	userId := getUserId(c)
-	tripId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
+// func (h *Handler) updateTrip(c *gin.Context) {
+// 	userId := getUserId(c)
+// 	tripId, err := strconv.Atoi(c.Param("id"))
+// 	if err != nil {
+// 		newErrorResponse(c, http.StatusBadRequest, err.Error())
+// 		return
+// 	}
+
+// 	var trip core.Trip
+// 	if err := c.BindJSON(&trip); err != nil {
+// 		newErrorResponse(c, http.StatusBadRequest, err.Error())
+// 		return
+// 	}
+// 	trip.AdminId = userId
+// 	trip.TripId = tripId
+// 	if err := h.services.Trip.Update(trip); err != nil {
+// 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, statusOkResponse{"ok"})
+// }
+
+type resAdjTrips struct {
+	Data []core.Trip `json:"data"`
+}
+
+func (h *Handler) getAdjacentTrips(c *gin.Context) {
+	// userId := getUserId(c)
+
+	var input core.InputAdjTrips
+	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var trip core.Trip
-	if err := c.BindJSON(&trip); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	trip.AdminId = userId
-	trip.TripId = tripId
-	if err := h.services.Trip.Update(trip); err != nil {
+	trips, err := h.services.Trip.GetAdjTrips(input)
+	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, statusOkResponse{"ok"})
+	c.JSON(http.StatusOK, resAdjTrips{trips})
 }

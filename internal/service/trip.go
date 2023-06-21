@@ -21,10 +21,14 @@ func (s *TripService) GetById(userId, tripId int) (core.Trip, error) {
 	return s.repo.GetById(userId, tripId)
 }
 
-func (s *TripService) Delete(userId, tripId int) error {
+func (s *TripService) Delete(userId, tripId int) (int, error) {
 	return s.repo.Delete(userId, tripId)
 }
 
-func (s *TripService) Update(trip core.Trip) error {
-	return s.repo.Update(trip)
+// func (s *TripService) Update(trip core.Trip) error {
+// 	return s.repo.Update(trip)
+// }
+
+func (s *TripService) GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error) {
+	return s.repo.GetAdjTrips(input)
 }

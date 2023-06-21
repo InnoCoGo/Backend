@@ -24,7 +24,7 @@ create table trips(
     id serial primary key,
     
     admin_id int not null,
-	is_passanger        boolean         not null,
+	is_driver        boolean         not null,
 
 	places_max          int             not null,
     places_taken        int             not null,

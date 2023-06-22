@@ -8,6 +8,18 @@ import (
 	"github.com/itoqsky/InnoCoTravel_backend/internal/core"
 )
 
+func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
+	trip := api.Group("/trip")
+	{
+		trip.POST("/", h.createTrip)
+		trip.GET("/:id", h.getTrip)
+		trip.DELETE("/:id", h.deleteTrip)
+		trip.GET("/", h.getJoinedTrips)
+		// trip.POST("/join", h.joinTrip)
+		trip.GET("/adjacent", h.getAdjacentTrips)
+	}
+}
+
 func (h *Handler) createTrip(c *gin.Context) {
 	userId := getUserId(c)
 

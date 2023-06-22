@@ -12,7 +12,7 @@ import (
 	"github.com/itoqsky/InnoCoTravel_backend/internal/repository"
 	"github.com/itoqsky/InnoCoTravel_backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel_backend/internal/service"
-	handler "github.com/itoqsky/InnoCoTravel_backend/internal/transport/http/v1"
+	handler "github.com/itoqsky/InnoCoTravel_backend/internal/transport/http"
 
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
@@ -44,7 +44,7 @@ func main() {
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
 
-	srv := server.NewServer(viper.GetString("port"), handlers.InitRoutes())
+	srv := server.NewServer(viper.GetString("port"), handlers.Init())
 
 	go func() {
 		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {

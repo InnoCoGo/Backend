@@ -63,7 +63,7 @@ func (s *AuthService) GenerateToken(id core.ID) (string, error) {
 	return token.SignedString([]byte(signInKey))
 }
 
-func (s *AuthService) ParseToken(accessToken string) (id core.ID, err error) {
+func (s *AuthService) ParseToken(accessToken string) (core.ID, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Invalid signing method")
@@ -71,18 +71,18 @@ func (s *AuthService) ParseToken(accessToken string) (id core.ID, err error) {
 		return []byte(signInKey), nil
 	})
 	if err != nil {
-		return id, err
+		return core.ID{}, err
 	}
 
 	claims, ok := token.Claims.(*TokenClaims)
 	if !ok {
-		return id, err
+		return core.ID{}, err
 	}
-	id = core.ID{
+
+	return core.ID{
 		User: claims.UserId,
 		TG:   claims.TgId,
-	}
-	return id, nil
+	}, nil
 }
 
 func generatePasswordHash(password string) string {

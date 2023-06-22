@@ -12,7 +12,7 @@ func corsMiddleware(c *gin.Context) {
 	c.Header("Access-Control-Allow-Headers", "*")
 	c.Header("Content-Type", "application/json")
 
-	if c.Request.Method == "OPTIONS" {
+	if c.Request.Method == http.MethodOptions {
 		c.AbortWithStatus(http.StatusOK)
 		return
 	}

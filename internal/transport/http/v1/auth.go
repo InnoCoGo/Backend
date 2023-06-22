@@ -8,6 +8,16 @@ import (
 	"github.com/itoqsky/InnoCoTravel_backend/internal/core"
 )
 
+func (h *Handler) initAuthRoutes(api *gin.RouterGroup) {
+	auth := api.Group("/auth")
+	{
+		auth.POST("/sign-in", h.signIn)
+		auth.POST("/sign-up", h.signUp)
+
+		auth.POST("/tg-login", h.tgLogIn)
+	}
+}
+
 func (h *Handler) signUp(c *gin.Context) {
 	var user core.User
 	if err := c.BindJSON(&user); err != nil {

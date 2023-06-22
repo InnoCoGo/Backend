@@ -63,7 +63,7 @@ func getUserId(c *gin.Context) int {
 	return idInt
 }
 
-func getTgId(c *gin.Context) int {
+func getTgId(c *gin.Context) int { // for grpc client communication with telegram bot
 	id, ok := c.Get(tgCtx)
 
 	if !ok {

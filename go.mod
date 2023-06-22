@@ -1,4 +1,4 @@
-module github.com/itoqsky/InnoCoTravel_backend
+module github.com/itoqsky/InnoCoTravel-backend
 
 go 1.20
 

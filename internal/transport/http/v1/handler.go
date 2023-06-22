@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/itoqsky/InnoCoTravel_backend/internal/service"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
 )
 
 type Handler struct {

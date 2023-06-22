@@ -9,10 +9,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/itoqsky/InnoCoTravel_backend/internal/repository"
-	"github.com/itoqsky/InnoCoTravel_backend/internal/server"
-	"github.com/itoqsky/InnoCoTravel_backend/internal/service"
-	handler "github.com/itoqsky/InnoCoTravel_backend/internal/transport/http"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/repository"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
+	handler "github.com/itoqsky/InnoCoTravel-backend/internal/transport/http"
 
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"

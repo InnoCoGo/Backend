@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/itoqsky/InnoCoTravel_backend/internal/core"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 )
 
 func (h *Handler) initAuthRoutes(api *gin.RouterGroup) {

@@ -11,15 +11,6 @@ create table users(
     tg_id int unique
 );
 
-create table users_trips(
-    user_id int not null,
-    trip_id int not null,
-
-    primary key(user_id, trip_id), 
-    foreign key(user_id) references users(id),
-    foreign key(trip_id) references trips(id)
-);
-
 create table trips(
     id serial primary key,
     
@@ -35,6 +26,15 @@ create table trips(
 	to_point            int             not null,
 
 	description         varchar(256)
+);
+
+create table users_trips(
+    user_id int not null,
+    trip_id int not null,
+
+    primary key(user_id, trip_id), 
+    foreign key(user_id) references users(id),
+    foreign key(trip_id) references trips(id)
 );
 
 create table comments(

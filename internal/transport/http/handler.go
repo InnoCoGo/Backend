@@ -4,8 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/itoqsky/InnoCoTravel_backend/internal/service"
-	v1 "github.com/itoqsky/InnoCoTravel_backend/internal/transport/http/v1"
+
+	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
+	v1 "github.com/itoqsky/InnoCoTravel-backend/internal/transport/http/v1"
 )
 
 type Handler struct {

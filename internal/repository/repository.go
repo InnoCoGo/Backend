@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/itoqsky/InnoCoTravel_backend/internal/core"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/jmoiron/sqlx"
 )
 

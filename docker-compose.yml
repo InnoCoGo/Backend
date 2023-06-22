@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  server:
+    image: inno-co-travel-be
+    container_name: "inno-co-travel-be"
+    build: ./
+    volumes:
+      - inno-co-travel-be-vol:/root/
+    ports:
+      - 8080:8080
+    environment:
+      - DB_PASSWORD
+    depends_on:
+      - db
+
+  db:
+    restart: always
+    image: postgres:latest
+    volumes:
+      - ./.build/volumes/databases/postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=qwerty
+    ports:
+      - 5432:5432 
+
+volumes:
+  inno-co-travel-be-vol:

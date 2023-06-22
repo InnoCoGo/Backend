@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/itoqsky/InnoCoTravel_backend/internal/core"
-	"github.com/itoqsky/InnoCoTravel_backend/internal/repository"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/repository"
 )
 
 type AuthService struct {

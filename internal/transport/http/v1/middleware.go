@@ -13,6 +13,7 @@ var BotToken = os.Getenv("BOT_TOKEN")
 const (
 	AuthorizationHeader = "Authorization"
 	userCtx             = "userId"
+	tgCtx               = "tgId"
 	webappKeyword       = "WebAppData"
 )
 
@@ -41,7 +42,8 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		return
 	}
 
-	c.Set(userCtx, id)
+	c.Set(userCtx, id.User)
+	c.Set(tgCtx, id.TG)
 }
 
 func getUserId(c *gin.Context) int {
@@ -55,6 +57,23 @@ func getUserId(c *gin.Context) int {
 	idInt, ok := id.(int)
 	if !ok {
 		newErrorResponse(c, http.StatusInternalServerError, "user id is of invalid type")
+		return 0
+	}
+
+	return idInt
+}
+
+func getTgId(c *gin.Context) int {
+	id, ok := c.Get(tgCtx)
+
+	if !ok {
+		newErrorResponse(c, http.StatusInternalServerError, "tg id not found")
+		return 0
+	}
+
+	idInt, ok := id.(int)
+	if !ok {
+		newErrorResponse(c, http.StatusInternalServerError, "tg id is of invalid type")
 		return 0
 	}
 

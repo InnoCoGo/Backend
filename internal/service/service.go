@@ -9,8 +9,10 @@ type Authorization interface {
 	CreateUser(user core.User) (int, error)
 	GetUserId(user core.User) (int, error)
 
-	GenerateToken(userId int) (string, error)
-	ParseToken(accessToken string) (int, error)
+	// GenerateToken(userId, tgId int) (string, error)
+	// ParseToken(accessToken string) (int, error)
+	GenerateToken(id core.ID) (string, error)
+	ParseToken(accessToken string) (core.ID, error)
 
 	VerifyTgAuthData(authData map[string]interface{}, keyword string) (bool, error) // WARNING! only error or bool should be returned
 }

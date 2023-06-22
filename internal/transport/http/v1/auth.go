@@ -49,7 +49,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		newErrorResponse(c, http.StatusUnauthorized, err.Error())
 	}
 
-	token, err := h.services.Authorization.GenerateToken(userId)
+	token, err := h.services.Authorization.GenerateToken(core.ID{User: userId})
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -187,16 +187,16 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 		return
 	}
 
-	id, err := h.services.Authorization.GetUserId(user) // Check if the user in the db
+	userId, err := h.services.Authorization.GetUserId(user) // Check if the user in the db
 	if err != nil {
-		id, err = h.services.Authorization.CreateUser(user)
+		userId, err = h.services.Authorization.CreateUser(user)
 		if err != nil {
 			newErrorResponse(c, http.StatusBadRequest, err.Error())
 			return
 		}
 	}
 
-	token, err := h.services.Authorization.GenerateToken(id)
+	token, err := h.services.Authorization.GenerateToken(core.ID{User: userId, TG: user.TgId})
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return

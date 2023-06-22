@@ -10,3 +10,8 @@ type User struct {
 	NumPeopleRated int    `json:"num_people_rated" db:"num_people_rated"`
 	TgId           int    `json:"tg_id" db:"tg_id"`
 }
+
+type ID struct {
+	User int
+	TG   int
+}

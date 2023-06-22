@@ -2,11 +2,11 @@ version: '3.8'
 
 services:
   server:
-    image: inno-co-travel-be
-    container_name: "inno-co-travel-be"
+    image: inno-cotravel-be
+    container_name: "inno-cotravel-be"
     build: ./
     volumes:
-      - inno-co-travel-be-vol:/root/
+      - inno-cotravel-be-vol:/root/
     ports:
       - 8080:8080
     environment:
@@ -25,4 +25,4 @@ services:
       - 5432:5432 
 
 volumes:
-  inno-co-travel-be-vol:
+  inno-cotravel-be-vol:

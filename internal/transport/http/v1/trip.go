@@ -1,4 +1,4 @@
-package handler
+package v1
 
 import (
 	"net/http"
@@ -108,4 +108,14 @@ func (h *Handler) getAdjacentTrips(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resAdjTrips{trips})
+}
+
+func (h *Handler) getJoinedTrips(c *gin.Context) {
+	tripsArr, err := h.services.Trip.GetJoinedTrips(getUserId(c))
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, tripsArr)
 }

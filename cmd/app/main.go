@@ -1,12 +1,19 @@
 package main
 
 import (
+	"context"
+	"errors"
+	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/itoqsky/InnoCoTravel_backend/internal/repository"
+	"github.com/itoqsky/InnoCoTravel_backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel_backend/internal/service"
-	"github.com/itoqsky/InnoCoTravel_backend/internal/transport/rest"
-	"github.com/itoqsky/InnoCoTravel_backend/internal/transport/rest/handler"
+	handler "github.com/itoqsky/InnoCoTravel_backend/internal/transport/http/v1"
+
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -37,16 +44,28 @@ func main() {
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
 
-	srv := new(rest.Server)
+	srv := server.NewServer(viper.GetString("port"), handlers.InitRoutes())
 
-	// go func() {
-	if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
-		logrus.Fatalf("error occured while running http server: %s", err.Error())
+	go func() {
+		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
+			logrus.Fatalf("error occured while running http server: %s", err.Error())
+		}
+	}()
+
+	// Gracefull Shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
+	<-quit
+
+	log.Printf("\nServer shutting down...")
+
+	if err := srv.Shutdown(context.Background()); err != nil && err != http.ErrServerClosed {
+		logrus.Errorf("failed to shut down the server: %s", err.Error())
 	}
-	// }()
 
 	if err := db.Close(); err != nil {
-		logrus.Errorf("error occured on closing database: %s", err.Error())
+		logrus.Errorf("error occured while closing the database: %s", err.Error())
 	}
 }
 

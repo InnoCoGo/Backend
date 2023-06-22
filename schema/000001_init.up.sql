@@ -1,5 +1,5 @@
 create table users(
-    id serial primary key,
+    id bigserial primary key,
     first_name varchar(256) not null,
     last_name varchar(256) not null,
 

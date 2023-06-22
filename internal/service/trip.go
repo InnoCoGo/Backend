@@ -32,3 +32,7 @@ func (s *TripService) Delete(userId, tripId int) (int, error) {
 func (s *TripService) GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error) {
 	return s.repo.GetAdjTrips(input)
 }
+
+func (s *TripService) GetJoinedTrips(userId int) ([]int, error) {
+	return s.repo.GetJoinedTrips(userId)
+}

@@ -10,7 +10,7 @@ services:
     ports:
       - 8000:8000
     environment:
-      - DB_PASSWORD
+      - DB_PASSWORD=qwerty
     depends_on:
       - db
 

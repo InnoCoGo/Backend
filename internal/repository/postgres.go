@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -31,6 +32,7 @@ func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
 	}
 
 	err = db.Ping()
+	fmt.Printf("host: %s\nusername: %s\nport: %s\ndbname: %s\nsslmode: %s\n", viper.GetString("db.host"), viper.GetString("db.username"), viper.GetString("db.port"), viper.GetString("db.dbname"), viper.GetString("db.sslmode"))
 	for i := 0; i < 10 && err != nil; i++ {
 		log.Println("Trying to connect to DB...")
 		err = db.Ping()

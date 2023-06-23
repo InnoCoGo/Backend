@@ -1,12 +1,21 @@
-name: Publish Docker image
+name: CI
 
 on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  REGISTRY: "innocotravel"
+  IMAGE_NAME: "backend"
+  CONTAINER_NAME: "backend-api"
+  LOGS_PATH: "/root/backend/api/logs/prod"
 
 jobs:
-  push_to_registry:
+  build_and_push:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     steps:
@@ -31,5 +40,26 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: staged
           labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    needs: build_and_push
+    runs-on: ${{ fromJSON('["ubuntu-latest", "self-hosted"]')[github.repository == 'github/docs-internal'] }}
+
+    steps:
+      - name: Accessing DockerHub from server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }} 
+
+          script: |
+
+            cd innocotravel
+
+            docker-compose stop
+            docker-compose rm -f
+            docker-compose pull
+            docker-compose up -d

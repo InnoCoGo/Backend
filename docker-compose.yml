@@ -8,7 +8,7 @@ services:
     volumes:
       - inno-cotravel-be-vol:/root/
     ports:
-      - 8080:8080
+      - 8000:8000
     environment:
       - DB_PASSWORD
     depends_on:
@@ -22,7 +22,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=qwerty
     ports:
-      - 5432:5432 
+      - 5432:5432
 
 volumes:
   inno-cotravel-be-vol:

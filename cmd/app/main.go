@@ -39,7 +39,11 @@ func main() {
 	}
 
 	if err := godotenv.Load(); err != nil {
-		logrus.Fatalf("error occured while loading .env file: %s", err.Error())
+		if os.IsNotExist(err) {
+			logrus.Errorf("not found .env file: %s", err.Error())
+		} else {
+			logrus.Fatalf("error occured while loading .env file: %s", err.Error())
+		}
 	}
 
 	db, err := repository.NewPostgresDB(repository.Config{
@@ -63,7 +67,7 @@ func main() {
 	srv := server.NewServer(viper.GetString("port"), handlers.Init())
 
 	go func() {
-		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
+		if err := srv.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logrus.Fatalf("error occured while running http server: %s", err.Error())
 		}
 	}()
@@ -76,7 +80,7 @@ func main() {
 
 	log.Printf("\nServer shutting down...")
 
-	if err := srv.Shutdown(context.Background()); err != nil && err != http.ErrServerClosed {
+	if err := srv.Shutdown(context.Background()); err != nil {
 		logrus.Errorf("failed to shut down the server: %s", err.Error())
 	}
 

@@ -59,7 +59,11 @@ jobs:
 
             cd innocotravel
 
+            docker compose -f docker-compose.yml down -v
             docker compose stop
             docker compose rm -f
             docker compose pull
             docker compose up -d
+
+            cd db_migration
+            ./migrate_up.sh

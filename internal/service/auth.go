@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"hash"
+	"log"
 	"os"
 	"sort"
 	"strings"
@@ -121,6 +122,8 @@ func (s *AuthService) VerifyTgAuthData(authData map[string]interface{}, keyword 
 	h = hmac.New(sha256.New, secretKey)
 	h.Write([]byte(dataCheckString))
 	hash := hex.EncodeToString(h.Sum(nil))
+
+	log.Printf("\nsecretkey: %s\nkeyword: %s\n", hex.EncodeToString(secretKey), keyword)
 
 	if hash != checkHash {
 		return false, fmt.Errorf("the hashes don't match")

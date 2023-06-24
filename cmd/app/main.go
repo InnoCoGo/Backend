@@ -13,6 +13,7 @@ import (
 	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
 	handler "github.com/itoqsky/InnoCoTravel-backend/internal/transport/http"
+	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
@@ -35,6 +36,10 @@ func main() {
 
 	if err := initConfig(); err != nil {
 		logrus.Fatalf("error occured while initializing configs: %s", err.Error())
+	}
+
+	if err := godotenv.Load(); err != nil {
+		logrus.Fatalf("error occured while loading .env file: %s", err.Error())
 	}
 
 	db, err := repository.NewPostgresDB(repository.Config{

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
@@ -30,6 +31,7 @@ func (r *TripPostgres) Create(trip core.Trip) (int, error) {
 		tx.Rollback()
 		return 0, err
 	}
+	// log.Printf("\n%v\n", trip.AdminId)
 
 	createUsersTripQuery := fmt.Sprintf(`INSERT INTO %s (user_id, trip_id) VALUES ($1, $2)`, usersTripsTable)
 	_, err = tx.Exec(createUsersTripQuery, trip.AdminId, id)
@@ -48,7 +50,7 @@ func (r *TripPostgres) GetById(userId, tripId int) (core.Trip, error) {
 							t.is_driver,
 							t.places_max,
 							t.places_taken,
-							t.chosen_date_time,
+							t.chosen_timestamp,
 							t.from_point,
 							t.to_point,
 							t.description
@@ -79,11 +81,11 @@ func (r *TripPostgres) Delete(userId, tripId int) (int, error) {
 	}
 
 	var newAdminId int
-	nextAdminQuery := fmt.Sprintf(`SELECT ut.user_id FROM %s ut WHERE ut.trip_id=$1`, usersTripsQuery)
+	nextAdminQuery := fmt.Sprintf(`SELECT ut.user_id FROM %s ut WHERE ut.trip_id=$1`, usersTripsTable)
 	row := tx.QueryRow(nextAdminQuery, tripId)
 
 	if err := row.Scan(&newAdminId); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			tripQuery := fmt.Sprintf(`DELETE FROM %s t WHERE t.id=$1 AND t.places_taken=0`, tripsTable)
 			_, err = tx.Exec(tripQuery, tripId)
 			if err != nil {

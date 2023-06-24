@@ -22,6 +22,7 @@ func (r *AuthPostgres) CreateUser(user core.User) (int, error) {
 	if err := row.Scan(&id); err != nil {
 		return 0, err
 	}
+	// log.Printf("\nCreateUser REPOS: %v\n", id)
 	return id, nil
 }
 

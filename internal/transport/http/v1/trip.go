@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
-	trip := api.Group("/trip")
+	trip := api.Group("/trip", h.userIdentity)
 	{
 		trip.POST("/", h.createTrip)
 		trip.GET("/:id", h.getTrip)
@@ -50,9 +50,11 @@ func (h *Handler) getTrip(c *gin.Context) {
 		return
 	}
 
+	// log.Printf("\ngetTrip handler user_id:%v\n", userId)
 	trip, err := h.services.Trip.GetById(userId, tripId)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	c.JSON(http.StatusOK, trip)

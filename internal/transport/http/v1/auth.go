@@ -57,6 +57,7 @@ func (h *Handler) signIn(c *gin.Context) {
 	userId, err := h.services.Authorization.GetUserId(user)
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err.Error())
+		return
 	}
 
 	token, err := h.services.Authorization.GenerateToken(core.ID{User: userId})
@@ -205,6 +206,8 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 			return
 		}
 	}
+
+	// log.Printf("\ntrasnport-auth.go tg-login generate token: %v\n", userId)
 
 	token, err := h.services.Authorization.GenerateToken(core.ID{User: userId, TG: user.TgId})
 	if err != nil {

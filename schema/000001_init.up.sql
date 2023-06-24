@@ -1,7 +1,7 @@
 create table users(
     id bigserial primary key,
-    first_name varchar(256) not null,
-    last_name varchar(256) not null,
+    first_name varchar(256),
+    last_name varchar(256),
 
     username varchar(256) not null unique,
     password_hash varchar(256) not null,
@@ -20,7 +20,7 @@ create table trips(
 	places_max          int             not null,
     places_taken        int             not null,
 
-	chosen_date_time    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+	chosen_timestamp    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
 	from_point          int             not null,
 	to_point            int             not null,

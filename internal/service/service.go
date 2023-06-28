@@ -28,7 +28,7 @@ type Trip interface {
 	Delete(userId, tripId int) (int, error)
 	// Update(trip core.Trip) error
 	GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error)
-	GetJoinedTrips(userId int) ([]int, error)
+	GetJoinedTrips(userId int) ([]core.Trip, error)
 }
 
 type Service struct {

@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 )
 
@@ -12,13 +13,30 @@ func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
 	trip := api.Group("/trip", h.userIdentity)
 	{
 		trip.POST("/", h.createTrip)
+		trip.GET("/", h.getJoinedTrips)
 		trip.GET("/:id", h.getTrip)
 		trip.DELETE("/:id", h.deleteTrip)
-		trip.GET("/", h.getJoinedTrips)
-		// trip.POST("/join", h.joinTrip)
-		trip.GET("/adjacent", h.getAdjacentTrips)
+
+		trip.PUT("/adjacent", h.getAdjacentTrips)
 	}
 }
+
+// createTrip 	godoc
+//
+// @Summary     Create trip
+// @Tags        trips
+// @Description create trip
+// @Security    ApiKeyAuth
+// @ID          create-trip
+// @Accept      json
+// @Produce     json
+// @Param       createInput body      core.Trip true "trip info"
+// @Success     200         {integer} integer
+// @Failure     400         {object}  errorResponse
+// @Failure     404         {object}  errorResponse
+// @Failure     500         {object}  errorResponse
+// @Failure     default     {object}  errorResponse
+// @Router      /trips [post]
 
 func (h *Handler) createTrip(c *gin.Context) {
 	userId := getUserId(c)
@@ -42,6 +60,48 @@ func (h *Handler) createTrip(c *gin.Context) {
 	})
 }
 
+// 	getJoinedTrips 			godoc
+// @Summary     Get Joined Trips
+// @Tags        trips
+// @Description get all trips
+// @ID          getjoinedTrips
+// @Security    ApiKeyAuth
+// @Accept      json
+// @Produce     json
+// @Param       getJoinedTrips body     int false "bruh"
+// @Success     200            {object} dataResponse
+// @Failure     400            {object} errorResponse
+// @Failure     404            {object} errorResponse
+// @Failure     500            {object} errorResponse
+// @Failure     default        {object} errorResponse
+// @Router      /trips [get]
+
+func (h *Handler) getJoinedTrips(c *gin.Context) {
+	trips, err := h.services.Trip.GetJoinedTrips(getUserId(c))
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, dataResponse{Data: trips})
+}
+
+// 	getTrip 			godoc
+// @Summary     Get Trip
+// @Tags        trips
+// @Description get trip
+// @Security    ApiKeyAuth
+// @ID          get-trip
+// @Accept      json
+// @Produce     json
+// @Param       id      path     int true "Trip ID"
+// @Success     200     {object} core.Trip
+// @Failure     400     {object} errorResponse
+// @Failure     404     {object} errorResponse
+// @Failure     500     {object} errorResponse
+// @Failure     default {object} errorResponse
+// @Router      /trips/{id} [get]
+
 func (h *Handler) getTrip(c *gin.Context) {
 	userId := getUserId(c)
 	tripId, err := strconv.Atoi(c.Param("id"))
@@ -50,7 +110,6 @@ func (h *Handler) getTrip(c *gin.Context) {
 		return
 	}
 
-	// log.Printf("\ngetTrip handler user_id:%v\n", userId)
 	trip, err := h.services.Trip.GetById(userId, tripId)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -59,6 +118,22 @@ func (h *Handler) getTrip(c *gin.Context) {
 
 	c.JSON(http.StatusOK, trip)
 }
+
+// 	deleteTrip 			godoc
+// @Summary     Delete Trip
+// @Tags        trips
+// @Description delete trip
+// @Security    ApiKeyAuth
+// @ID          delete-trip
+// @Accept      json
+// @Produce     json
+// @Param       id      path     int true "Trip ID"
+// @Success     200     {object} integer
+// @Failure     400     {object} errorResponse
+// @Failure     404     {object} errorResponse
+// @Failure     500     {object} errorResponse
+// @Failure     default {object} errorResponse
+// @Router      /trips/{id} [delete]
 
 func (h *Handler) deleteTrip(c *gin.Context) {
 	userId := getUserId(c)
@@ -79,36 +154,23 @@ func (h *Handler) deleteTrip(c *gin.Context) {
 	})
 }
 
-// func (h *Handler) updateTrip(c *gin.Context) {
-// 	userId := getUserId(c)
-// 	tripId, err := strconv.Atoi(c.Param("id"))
-// 	if err != nil {
-// 		newErrorResponse(c, http.StatusBadRequest, err.Error())
-// 		return
-// 	}
-
-// 	var trip core.Trip
-// 	if err := c.BindJSON(&trip); err != nil {
-// 		newErrorResponse(c, http.StatusBadRequest, err.Error())
-// 		return
-// 	}
-// 	trip.AdminId = userId
-// 	trip.TripId = tripId
-// 	if err := h.services.Trip.Update(trip); err != nil {
-// 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, statusOkResponse{"ok"})
-// }
-
-type resAdjTrips struct {
-	Data []core.Trip `json:"data"`
-}
+// 	getAdjacentTrips 		godoc
+// @Summary     Get Adjacent Trips
+// @Tags        trips
+// @Description Get Adjacent Trips
+// @Security    ApiKeyAuth
+// @ID          get-adjacent-trips
+// @Accept      json
+// @Produce     json
+// @Param       getAdjacentTrips body     core.InputAdjTrips true "adj trip info"
+// @Success     200              {object} dataResponse
+// @Failure     400              {object} errorResponse
+// @Failure     404              {object} errorResponse
+// @Failure     500              {object} errorResponse
+// @Failure     default          {object} errorResponse
+// @Router      /trips/adjacent [put]
 
 func (h *Handler) getAdjacentTrips(c *gin.Context) {
-	// userId := getUserId(c)
-
 	var input core.InputAdjTrips
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -121,15 +183,9 @@ func (h *Handler) getAdjacentTrips(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resAdjTrips{trips})
+	c.JSON(http.StatusOK, dataResponse{Data: trips})
 }
 
-func (h *Handler) getJoinedTrips(c *gin.Context) {
-	tripsArr, err := h.services.Trip.GetJoinedTrips(getUserId(c))
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
+func (h *Handler) updateTrip(c *gin.Context) {
 
-	c.JSON(http.StatusOK, tripsArr)
 }

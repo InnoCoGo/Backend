@@ -13,6 +13,11 @@ type errorResponse struct {
 // 	Status string `json:"status"`
 // }
 
+type dataResponse struct {
+	Data  interface{} `json:"data"`
+	Count int64       `json:"count"`
+}
+
 func newErrorResponse(c *gin.Context, statusCode int, message string) {
 	logrus.Error(message)
 	c.AbortWithStatusJSON(statusCode, errorResponse{message})

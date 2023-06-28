@@ -9,10 +9,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/repository"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
-	handler "github.com/itoqsky/InnoCoTravel-backend/internal/transport/http"
+	transport "github.com/itoqsky/InnoCoTravel-backend/internal/transport/http"
 	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
@@ -20,16 +21,21 @@ import (
 	"github.com/spf13/viper"
 )
 
-// @title InnoCoTravel API
-// @version 1.0
-// @description REST API for InnoCoTravel API
+// @title       InnoCoTravel API
+// @version     1.0
+// @description REST API for InnoCoTravel App
 
-// @host localhost:8000
-// @BasePath /api/v1/
+// @Server localhost:8000 Server 1
+
+// @license.name Apache 2.0
+// @license.url  http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host     localhost:8000
+// @BasePath /api/v1
 
 // @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
+// @in                         header
+// @name                       Authorization
 
 func main() {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
@@ -47,8 +53,8 @@ func main() {
 	}
 
 	db, err := repository.NewPostgresDB(repository.Config{
-		Host:     viper.GetString("db.host"),
-		Port:     viper.GetString("db.port"),
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
 		Username: viper.GetString("db.username"),
 		Password: os.Getenv("DB_PASSWORD"),
 		DBName:   viper.GetString("db.dbname"),
@@ -62,7 +68,7 @@ func main() {
 
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos)
-	handlers := handler.NewHandler(services)
+	handlers := transport.NewHandler(services)
 
 	srv := server.NewServer(viper.GetString("port"), handlers.Init())
 

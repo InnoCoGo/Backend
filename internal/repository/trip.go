@@ -138,9 +138,9 @@ func (r *TripPostgres) GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error
 	return trips, err
 }
 
-func (r *TripPostgres) GetJoinedTrips(userId int) ([]int, error) {
-	var dest []int
-	query := fmt.Sprintf(`SELECT trip_id FROM %s WHERE user_id = $1`, usersTripsTable)
+func (r *TripPostgres) GetJoinedTrips(userId int) ([]core.Trip, error) {
+	var dest []core.Trip
+	query := fmt.Sprintf(`SELECT * FROM %s WHERE user_id = $1`, usersTripsTable)
 	err := r.db.Select(&dest, query, userId)
 	return dest, err
 }

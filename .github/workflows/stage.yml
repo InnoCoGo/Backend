@@ -64,6 +64,5 @@ jobs:
             docker compose rm -f
             docker compose pull
             docker compose up -d
-
-            cd db_migration
+            
             ./migrate_up.sh

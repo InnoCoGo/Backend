@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
 
 env:
   REGISTRY: "innocotravel"
@@ -65,5 +62,4 @@ jobs:
             docker compose pull
             docker compose up -d
 
-            cd db_migration
             ./migrate_up.sh

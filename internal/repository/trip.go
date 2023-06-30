@@ -24,9 +24,9 @@ func (r *TripPostgres) Create(trip core.Trip) (int, error) {
 	}
 
 	var id int
-	createTripQuery := fmt.Sprintf(`INSERT INTO %s (admin_id, is_driver, places_max, places_taken, chosen_timestamp, from_point, to_point, description)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`, tripsTable)
-	row := tx.QueryRow(createTripQuery, trip.AdminId, trip.IsDriver, trip.PlacesMax, trip.PlacesTaken, trip.ChosenTimestamp, trip.FromPoint, trip.ToPoint, trip.Description)
+	createTripQuery := fmt.Sprintf(`INSERT INTO %s (admin_id, admin_username, is_driver, places_max, places_taken, chosen_timestamp, from_point, to_point, description)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`, tripsTable)
+	row := tx.QueryRow(createTripQuery, trip.AdminId, trip.AdminUsername, trip.IsDriver, trip.PlacesMax, trip.PlacesTaken, trip.ChosenTimestamp, trip.FromPoint, trip.ToPoint, trip.Description)
 	if err := row.Scan(&id); err != nil {
 		tx.Rollback()
 		return 0, err
@@ -44,16 +44,7 @@ func (r *TripPostgres) Create(trip core.Trip) (int, error) {
 }
 
 func (r *TripPostgres) GetById(userId, tripId int) (core.Trip, error) {
-	query := fmt.Sprintf(`SELECT
-							t.id,
-							t.admin_id,
-							t.is_driver,
-							t.places_max,
-							t.places_taken,
-							t.chosen_timestamp,
-							t.from_point,
-							t.to_point,
-							t.description
+	query := fmt.Sprintf(`SELECT *
 						FROM 
 							%s t
 						INNER JOIN %s ut
@@ -140,7 +131,18 @@ func (r *TripPostgres) GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error
 
 func (r *TripPostgres) GetJoinedTrips(userId int) ([]core.Trip, error) {
 	var dest []core.Trip
-	query := fmt.Sprintf(`SELECT * FROM %s WHERE user_id = $1`, usersTripsTable)
+	query := fmt.Sprintf(`SELECT 
+							t.id,
+							t.admin_id,
+							t.admin_username,
+							t.is_driver,
+							t.places_max,
+							t.places_taken,
+							t.chosen_timestamp,
+							t.from_point,
+							t.to_point,
+							t.description
+						FROM %s as t, %s as u WHERE u.user_id = $1`, tripsTable, usersTripsTable)
 	err := r.db.Select(&dest, query, userId)
 	return dest, err
 }

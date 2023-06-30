@@ -39,8 +39,6 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "REST API for InnoCoTravel App",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	LeftDelim:        "{{",
-	RightDelim:       "}}",
 }
 
 func init() {

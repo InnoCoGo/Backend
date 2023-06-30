@@ -21,21 +21,21 @@ import (
 	"github.com/spf13/viper"
 )
 
-// @title       InnoCoTravel API
-// @version     1.0
-// @description REST API for InnoCoTravel App
+//	@title			InnoCoTravel API
+//	@version		1.0
+//	@description	REST API for InnoCoTravel App
 
-// @Server localhost:8000 Server 1
+//	@Server	localhost:8000 Server 1
 
-// @license.name Apache 2.0
-// @license.url  http://www.apache.org/licenses/LICENSE-2.0.html
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host     localhost:8000
-// @BasePath /api/v1
+//	@host		localhost:8000
+//	@BasePath	/api/v1
 
-// @securityDefinitions.apikey ApiKeyAuth
-// @in                         header
-// @name                       Authorization
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
 
 func main() {
 	logrus.SetFormatter(new(logrus.JSONFormatter))

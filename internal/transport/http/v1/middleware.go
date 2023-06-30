@@ -1,19 +1,22 @@
 package v1
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 )
 
 var BotToken = os.Getenv("BOT_TOKEN")
 
 const (
 	AuthorizationHeader = "Authorization"
-	userCtx             = "userId"
-	tgCtx               = "tgId"
+	userIdCtx           = "userId"
+	usernameCtx         = "username"
 	webappKeyword       = "WebAppData"
 )
 
@@ -36,46 +39,39 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		}
 	}
 
-	id, err := h.services.Authorization.ParseToken(token)
+	uctx, err := h.services.Authorization.ParseToken(token)
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	c.Set(userCtx, id.User)
-	// c.Set(tgCtx, id.TG)
+	c.Set(userIdCtx, uctx.UserId)
+	c.Set(usernameCtx, uctx.Username)
 }
 
-func getUserId(c *gin.Context) int {
-	id, ok := c.Get(userCtx)
+func getUserCtx(c *gin.Context) (core.UserCtx, error) {
+	id, ok := c.Get(userIdCtx)
 
 	if !ok {
-		newErrorResponse(c, http.StatusInternalServerError, "user id not found")
-		return 0
+		return core.UserCtx{}, fmt.Errorf("user id not found")
 	}
 
 	idInt, ok := id.(int)
 	if !ok {
-		newErrorResponse(c, http.StatusInternalServerError, "user id is of invalid type")
-		return 0
+		return core.UserCtx{}, fmt.Errorf("user id is of invalid type")
 	}
 
-	return idInt
-}
-
-func getTgId(c *gin.Context) int { // for grpc client communication with telegram bot
-	id, ok := c.Get(tgCtx)
+	username, ok := c.Get(usernameCtx)
 
 	if !ok {
-		newErrorResponse(c, http.StatusInternalServerError, "tg id not found")
-		return 0
+		return core.UserCtx{}, fmt.Errorf("(tg)username not found")
 	}
-
-	idInt, ok := id.(int)
+	usernameStr, ok := username.(string)
 	if !ok {
-		newErrorResponse(c, http.StatusInternalServerError, "tg id is of invalid type")
-		return 0
+		return core.UserCtx{}, fmt.Errorf("(tg)username is of invalid type")
 	}
 
-	return idInt
+	log.Printf("\n%v && %v\n", idInt, usernameStr)
+
+	return core.UserCtx{UserId: idInt, Username: usernameStr}, nil
 }

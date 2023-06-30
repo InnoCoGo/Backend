@@ -19,20 +19,20 @@ func (h *Handler) initAuthRoutes(api *gin.RouterGroup) {
 	}
 }
 
-// @Summary     SignUp
-// @Tags        auth
-// @Description create account
-// @ModuleID    signUp
-// @ID          create-account
-// @Accept      json
-// @Produce     json
-// @Param       input   body      core.User true "sign up info"
-// @Success     200     {integer} integer
-// @Failure     400     {object}  errorResponse
-// @Failure     404     {object}  errorResponse
-// @Failure     500     {object}  errorResponse
-// @Failure     default {object}  errorResponse
-// @Router      /auth/sign-up [post]
+//	@Summary		SignUp
+//	@Tags			auth
+//	@Description	create account
+//	@ModuleID		signUp
+//	@ID				create-account
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		core.User	true	"sign up info"
+//	@Success		200		{integer}	integer
+//	@Failure		400		{object}	errorResponse
+//	@Failure		404		{object}	errorResponse
+//	@Failure		500		{object}	errorResponse
+//	@Failure		default	{object}	errorResponse
+//	@Router			/auth/sign-up [post]
 
 func (h *Handler) signUp(c *gin.Context) {
 	var user core.User
@@ -61,19 +61,19 @@ type tokenResponse struct {
 	Token string `json:"token"`
 }
 
-// @Summary     SignIn
-// @Tags        auth
-// @Description sign in
-// @ID          sign-in
-// @Accept      json
-// @Produce     json
-// @Param       input   body     signInInput true "sign in info"
-// @Success     200     {object} tokenResponse
-// @Failure     400     {object} errorResponse
-// @Failure     404     {object} errorResponse
-// @Failure     500     {object} errorResponse
-// @Failure     default {object} errorResponse
-// @Router      /auth/sign-in [post]
+//	@Summary		SignIn
+//	@Tags			auth
+//	@Description	sign in
+//	@ID				sign-in
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		signInInput	true	"sign in info"
+//	@Success		200		{object}	tokenResponse
+//	@Failure		400		{object}	errorResponse
+//	@Failure		404		{object}	errorResponse
+//	@Failure		500		{object}	errorResponse
+//	@Failure		default	{object}	errorResponse
+//	@Router			/auth/sign-in [post]
 
 func (h *Handler) signIn(c *gin.Context) {
 	var userSignInObj signInInput
@@ -94,7 +94,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.services.Authorization.GenerateToken(core.ID{User: userId})
+	token, err := h.services.Authorization.GenerateToken(core.UserCtx{UserId: userId, Username: user.Username})
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -136,19 +136,19 @@ const (
 	webAppKeyword = "WebAppData"
 )
 
-// @Summary     TGLogin
-// @Tags        auth
-// @Description user tg login
-// @ID          tg-login
-// @Accept      json
-// @Produce     json
-// @Param       input   body     TgLoginInput true "tg login info"
-// @Success     200     {object} tokenResponse
-// @Failure     400     {object} errorResponse
-// @Failure     404     {object} errorResponse
-// @Failure     500     {object} errorResponse
-// @Failure     default {object} errorResponse
-// @Router      /auth/tg-login [post]
+//	@Summary		TGLogin
+//	@Tags			auth
+//	@Description	user tg login
+//	@ID				tg-login
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		TgLoginInput	true	"tg login info"
+//	@Success		200		{object}	tokenResponse
+//	@Failure		400		{object}	errorResponse
+//	@Failure		404		{object}	errorResponse
+//	@Failure		500		{object}	errorResponse
+//	@Failure		default	{object}	errorResponse
+//	@Router			/auth/tg-login [post]
 
 func (h *Handler) tgLogIn(c *gin.Context) {
 	var (
@@ -253,7 +253,7 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 		}
 	}
 
-	token, err := h.services.Authorization.GenerateToken(core.ID{User: userId, TG: user.TgId})
+	token, err := h.services.Authorization.GenerateToken(core.UserCtx{UserId: userId, Username: user.Username})
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return

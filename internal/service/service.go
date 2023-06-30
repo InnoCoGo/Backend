@@ -11,8 +11,8 @@ type Authorization interface {
 
 	// GenerateToken(userId, tgId int) (string, error)
 	// ParseToken(accessToken string) (int, error)
-	GenerateToken(id core.ID) (string, error)
-	ParseToken(accessToken string) (core.ID, error)
+	GenerateToken(id core.UserCtx) (string, error)
+	ParseToken(accessToken string) (core.UserCtx, error)
 
 	VerifyTgAuthData(authData map[string]interface{}, keyword string) (bool, error) // WARNING! only error or bool should be returned
 }

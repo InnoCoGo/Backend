@@ -13,4 +13,4 @@ migrate-drop:
 
 swag:
 	swag fmt
-	swag init -d cmd/app/,internal/transport/http/v1 -g main.go --parseDependency --parseInternal
+	swag init -d cmd/app/,internal/transport/http/v1 -g main.go --parseDependency=true --parseInternal=true

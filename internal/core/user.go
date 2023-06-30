@@ -11,7 +11,7 @@ type User struct {
 	TgId           int    `json:"tg_id" db:"tg_id"`
 }
 
-type ID struct {
-	User int
-	TG   int
+type UserCtx struct {
+	UserId   int
+	Username string
 }

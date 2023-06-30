@@ -33,8 +33,8 @@ const (
 
 type TokenClaims struct {
 	jwt.StandardClaims
-	UserId int `json:"user_id"`
-	TgId   int `json:"tg_id"`
+	UserId   int    `json:"user_id"`
+	Username string `json:"username"`
 }
 
 func (s *AuthService) CreateUser(user core.User) (int, error) {
@@ -51,20 +51,20 @@ func (s *AuthService) GetUserId(user core.User) (int, error) {
 	return s.repo.GetUserId(user)
 }
 
-func (s *AuthService) GenerateToken(id core.ID) (string, error) {
+func (s *AuthService) GenerateToken(uctx core.UserCtx) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &TokenClaims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(tokenTTL).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
-		UserId: id.User,
-		TgId:   id.TG,
+		UserId:   uctx.UserId,
+		Username: uctx.Username,
 	})
 
 	return token.SignedString([]byte(signInKey))
 }
 
-func (s *AuthService) ParseToken(accessToken string) (core.ID, error) {
+func (s *AuthService) ParseToken(accessToken string) (core.UserCtx, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Invalid signing method")
@@ -72,17 +72,17 @@ func (s *AuthService) ParseToken(accessToken string) (core.ID, error) {
 		return []byte(signInKey), nil
 	})
 	if err != nil {
-		return core.ID{}, err
+		return core.UserCtx{}, err
 	}
 
 	claims, ok := token.Claims.(*TokenClaims)
 	if !ok {
-		return core.ID{}, err
+		return core.UserCtx{}, err
 	}
 
-	return core.ID{
-		User: claims.UserId,
-		TG:   claims.TgId,
+	return core.UserCtx{
+		UserId:   claims.UserId,
+		Username: claims.Username,
 	}, nil
 }
 

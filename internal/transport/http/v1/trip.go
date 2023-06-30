@@ -23,23 +23,27 @@ func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
 
 // createTrip 	godoc
 //
-// @Summary     Create trip
-// @Tags        trips
-// @Description create trip
-// @Security    ApiKeyAuth
-// @ID          create-trip
-// @Accept      json
-// @Produce     json
-// @Param       createInput body      core.Trip true "trip info"
-// @Success     200         {integer} integer
-// @Failure     400         {object}  errorResponse
-// @Failure     404         {object}  errorResponse
-// @Failure     500         {object}  errorResponse
-// @Failure     default     {object}  errorResponse
-// @Router      /trips [post]
+//	@Summary		Create trip
+//	@Tags			trips
+//	@Description	create trip
+//	@Security		ApiKeyAuth
+//	@ID				create-trip
+//	@Accept			json
+//	@Produce		json
+//	@Param			createInput	body		core.Trip	true	"trip info"
+//	@Success		200			{integer}	integer
+//	@Failure		400			{object}	errorResponse
+//	@Failure		404			{object}	errorResponse
+//	@Failure		500			{object}	errorResponse
+//	@Failure		default		{object}	errorResponse
+//	@Router			/trips [post]
 
 func (h *Handler) createTrip(c *gin.Context) {
-	userId := getUserId(c)
+	uctx, err := getUserCtx(c)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
 
 	var trip core.Trip
 	if err := c.BindJSON(&trip); err != nil {
@@ -47,7 +51,8 @@ func (h *Handler) createTrip(c *gin.Context) {
 		return
 	}
 
-	trip.AdminId = userId
+	trip.AdminId = uctx.UserId
+	trip.AdminUsername = uctx.Username
 
 	tripId, err := h.services.Trip.Create(trip)
 	if err != nil {
@@ -61,23 +66,29 @@ func (h *Handler) createTrip(c *gin.Context) {
 }
 
 // 	getJoinedTrips 			godoc
-// @Summary     Get Joined Trips
-// @Tags        trips
-// @Description get all trips
-// @ID          getjoinedTrips
-// @Security    ApiKeyAuth
-// @Accept      json
-// @Produce     json
-// @Param       getJoinedTrips body     int false "bruh"
-// @Success     200            {object} dataResponse
-// @Failure     400            {object} errorResponse
-// @Failure     404            {object} errorResponse
-// @Failure     500            {object} errorResponse
-// @Failure     default        {object} errorResponse
-// @Router      /trips [get]
+//	@Summary		Get Joined Trips
+//	@Tags			trips
+//	@Description	get all trips
+//	@ID				getjoinedTrips
+//	@Security		ApiKeyAuth
+//	@Accept			json
+//	@Produce		json
+//	@Param			getJoinedTrips	body		int	false	"bruh"
+//	@Success		200				{object}	dataResponse
+//	@Failure		400				{object}	errorResponse
+//	@Failure		404				{object}	errorResponse
+//	@Failure		500				{object}	errorResponse
+//	@Failure		default			{object}	errorResponse
+//	@Router			/trips [get]
 
 func (h *Handler) getJoinedTrips(c *gin.Context) {
-	trips, err := h.services.Trip.GetJoinedTrips(getUserId(c))
+	uctx, err := getUserCtx(c)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	trips, err := h.services.Trip.GetJoinedTrips(uctx.UserId)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -87,30 +98,35 @@ func (h *Handler) getJoinedTrips(c *gin.Context) {
 }
 
 // 	getTrip 			godoc
-// @Summary     Get Trip
-// @Tags        trips
-// @Description get trip
-// @Security    ApiKeyAuth
-// @ID          get-trip
-// @Accept      json
-// @Produce     json
-// @Param       id      path     int true "Trip ID"
-// @Success     200     {object} core.Trip
-// @Failure     400     {object} errorResponse
-// @Failure     404     {object} errorResponse
-// @Failure     500     {object} errorResponse
-// @Failure     default {object} errorResponse
-// @Router      /trips/{id} [get]
+//	@Summary		Get Trip
+//	@Tags			trips
+//	@Description	get trip
+//	@Security		ApiKeyAuth
+//	@ID				get-trip
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int	true	"Trip ID"
+//	@Success		200		{object}	core.Trip
+//	@Failure		400		{object}	errorResponse
+//	@Failure		404		{object}	errorResponse
+//	@Failure		500		{object}	errorResponse
+//	@Failure		default	{object}	errorResponse
+//	@Router			/trips/{id} [get]
 
 func (h *Handler) getTrip(c *gin.Context) {
-	userId := getUserId(c)
+	uctx, err := getUserCtx(c)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	tripId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	trip, err := h.services.Trip.GetById(userId, tripId)
+	trip, err := h.services.Trip.GetById(uctx.UserId, tripId)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -120,30 +136,35 @@ func (h *Handler) getTrip(c *gin.Context) {
 }
 
 // 	deleteTrip 			godoc
-// @Summary     Delete Trip
-// @Tags        trips
-// @Description delete trip
-// @Security    ApiKeyAuth
-// @ID          delete-trip
-// @Accept      json
-// @Produce     json
-// @Param       id      path     int true "Trip ID"
-// @Success     200     {object} integer
-// @Failure     400     {object} errorResponse
-// @Failure     404     {object} errorResponse
-// @Failure     500     {object} errorResponse
-// @Failure     default {object} errorResponse
-// @Router      /trips/{id} [delete]
+//	@Summary		Delete Trip
+//	@Tags			trips
+//	@Description	delete trip
+//	@Security		ApiKeyAuth
+//	@ID				delete-trip
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int	true	"Trip ID"
+//	@Success		200		{object}	integer
+//	@Failure		400		{object}	errorResponse
+//	@Failure		404		{object}	errorResponse
+//	@Failure		500		{object}	errorResponse
+//	@Failure		default	{object}	errorResponse
+//	@Router			/trips/{id} [delete]
 
 func (h *Handler) deleteTrip(c *gin.Context) {
-	userId := getUserId(c)
+	uctx, err := getUserCtx(c)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	tripId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	newAdminId, err := h.services.Trip.Delete(userId, tripId)
+	newAdminId, err := h.services.Trip.Delete(uctx.UserId, tripId)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -155,20 +176,20 @@ func (h *Handler) deleteTrip(c *gin.Context) {
 }
 
 // 	getAdjacentTrips 		godoc
-// @Summary     Get Adjacent Trips
-// @Tags        trips
-// @Description Get Adjacent Trips
-// @Security    ApiKeyAuth
-// @ID          get-adjacent-trips
-// @Accept      json
-// @Produce     json
-// @Param       getAdjacentTrips body     core.InputAdjTrips true "adj trip info"
-// @Success     200              {object} dataResponse
-// @Failure     400              {object} errorResponse
-// @Failure     404              {object} errorResponse
-// @Failure     500              {object} errorResponse
-// @Failure     default          {object} errorResponse
-// @Router      /trips/adjacent [put]
+//	@Summary		Get Adjacent Trips
+//	@Tags			trips
+//	@Description	Get Adjacent Trips
+//	@Security		ApiKeyAuth
+//	@ID				get-adjacent-trips
+//	@Accept			json
+//	@Produce		json
+//	@Param			getAdjacentTrips	body		core.InputAdjTrips	true	"adj trip info"
+//	@Success		200					{object}	dataResponse
+//	@Failure		400					{object}	errorResponse
+//	@Failure		404					{object}	errorResponse
+//	@Failure		500					{object}	errorResponse
+//	@Failure		default				{object}	errorResponse
+//	@Router			/trips/adjacent [put]
 
 func (h *Handler) getAdjacentTrips(c *gin.Context) {
 	var input core.InputAdjTrips

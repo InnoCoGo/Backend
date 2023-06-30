@@ -15,6 +15,7 @@ create table trips(
     id serial primary key,
     
     admin_id int not null,
+    admin_username varchar(256),
 	is_driver        boolean         not null,
 
 	places_max          int             not null,

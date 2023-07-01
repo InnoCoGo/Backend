@@ -1,17 +1,135 @@
-basePath: /api/v1
-host: localhost:8000
-info:
-  contact: {}
-  description: REST API for InnoCoTravel App
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: InnoCoTravel API
-  version: "1.0"
-paths: {}
-securityDefinitions:
-  ApiKeyAuth:
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"
+info:
+  title: "InnoCoTravel API"
+  version: "1.0"
+  description: "REST API for InnoCoTravel App"
+host: "localhost:8000"
+basePath: "/api/v1"
+schemes:
+  - "http"
+  - "https"
+securityDefinitions:
+  apikey:
+    type: "apiKey"
+    in: "header"
+    name: "Authorization"
+paths:
+  /auth/sign-up:
+    post:
+      summary: "SignUp"
+      tags:
+        - "auth"
+      description: "create account"
+      operationId: "create-account"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "input"
+          in: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: "integer"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/errorResponse"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/errorResponse"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/errorResponse"
+        default:
+          description: "Default Error Response"
+          schema:
+            $ref: "#/definitions/errorResponse"
+  /auth/sign-in:
+    post:
+      summary: "SignIn"
+      tags:
+        - "auth"
+      description: "sign in"
+      operationId: "sign-in"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "input"
+          in: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/signInInput"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/tokenResponse"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/errorResponse"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/errorResponse"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/errorResponse"
+        default:
+          description: "Default Error Response"
+          schema:
+            $ref: "#/definitions/errorResponse"
+definitions:
+  User:
+    type: "object"
+    properties:
+      Id:
+        type: "integer"
+      FirstName:
+        type: "string"
+        required: true
+      LastName:
+        type: "string"
+        required: true
+      Username:
+        type: "string"
+        required: true
+      PasswordOrHash:
+        type: "string"
+        required: true
+      Rating:
+        type: "integer"
+      NumPeopleRated:
+        type: "integer"
+      TgId:
+        type: "integer"
+  errorResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+  signInInput:
+    type: "object"
+    properties:
+      username:
+        type: "string"
+        required: true
+      password:
+        type: "string"
+        required: true
+  tokenResponse:
+    type: "object"
+    properties:
+      Token:
+        type: "string"

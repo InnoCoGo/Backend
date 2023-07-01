@@ -62,7 +62,7 @@ func main() {
 	})
 
 	if err != nil {
-		logrus.Fatalf("error occured while connecting to db: %s", err.Error())
+		logrus.Fatalf("error occured while connecting  to db: %s", err.Error())
 		return
 	}
 

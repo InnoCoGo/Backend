@@ -44,7 +44,7 @@ func (r *TripPostgres) Create(trip core.Trip) (int, error) {
 }
 
 func (r *TripPostgres) GetById(userId, tripId int) (core.Trip, error) {
-	query := fmt.Sprintf(`SELECT *
+	query := fmt.Sprintf(`SELECT t.*
 						FROM 
 							%s t
 						INNER JOIN %s ut
@@ -131,18 +131,11 @@ func (r *TripPostgres) GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error
 
 func (r *TripPostgres) GetJoinedTrips(userId int) ([]core.Trip, error) {
 	var dest []core.Trip
-	query := fmt.Sprintf(`SELECT 
-							t.id,
-							t.admin_id,
-							t.admin_username,
-							t.is_driver,
-							t.places_max,
-							t.places_taken,
-							t.chosen_timestamp,
-							t.from_point,
-							t.to_point,
-							t.description
-						FROM %s as t, %s as u WHERE u.user_id = $1`, tripsTable, usersTripsTable)
+	query := fmt.Sprintf(`SELECT t.*
+						FROM 
+							%s as t, %s as u 
+						WHERE 
+							u.user_id = $1`, tripsTable, usersTripsTable)
 	err := r.db.Select(&dest, query, userId)
 	return dest, err
 }

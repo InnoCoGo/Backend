@@ -1,7 +1,7 @@
 package server
 
 type Room struct {
-	Id      int64              `json:"room_id"`
+	Id      string             `json:"room_id"`
 	Name    string             `json:"room_name"`
 	Clients map[string]*Client `json:"clients"`
 }

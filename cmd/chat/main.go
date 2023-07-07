@@ -7,7 +7,6 @@ import (
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/repository"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
-	"github.com/itoqsky/InnoCoTravel-backend/internal/transport/http"
 	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
@@ -46,7 +45,7 @@ func main() {
 
 	repos := repository.NewAuthPostgres(db)
 	services := service.NewAuthService(repos)
-	handlers := http.NewHandler(services)
+	handlers := http.(services)
 
 }
 

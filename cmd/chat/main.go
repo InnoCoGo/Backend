@@ -1,41 +1,19 @@
 package main
 
 import (
-	"context"
-	"errors"
-	"log"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/repository"
-	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
-	transport "github.com/itoqsky/InnoCoTravel-backend/internal/transport/http"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/transport/http"
 	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
-
-//	@title			InnoCoTravel API
-//	@version		1.0
-//	@description	REST API for InnoCoTravel App
-
-//	@Server	localhost:8000 Server 1
-
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-
-//	@host		localhost:8000
-//	@BasePath	/api/v1
-
-//	@securityDefinitions.apikey	ApiKeyAuth
-//	@in							header
-//	@name						Authorization
 
 func main() {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
@@ -66,33 +44,10 @@ func main() {
 		return
 	}
 
-	repos := repository.NewRepository(db)
-	services := service.NewService(repos)
-	handlers := transport.NewHandler(services)
+	repos := repository.NewAuthPostgres(db)
+	services := service.NewAuthService(repos)
+	handlers := http.NewHandler(services)
 
-	srv := server.NewServer(viper.GetString("port"), handlers.Init())
-
-	go func() {
-		if err := srv.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logrus.Fatalf("error occured while running http server: %s", err.Error())
-		}
-	}()
-
-	// Gracefull Shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
-
-	<-quit
-
-	log.Printf("\nServer shutting down...")
-
-	if err := srv.Shutdown(context.Background()); err != nil {
-		logrus.Errorf("failed to shut down the server: %s", err.Error())
-	}
-
-	if err := db.Close(); err != nil {
-		logrus.Errorf("error occured while closing the database: %s", err.Error())
-	}
 }
 
 func initConfig() error {

@@ -1,11 +1,11 @@
-package v1
+package response
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
-type errorResponse struct {
+type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
@@ -13,12 +13,12 @@ type errorResponse struct {
 // 	Status string `json:"status"`
 // }
 
-type dataResponse struct {
+type DataResponse struct {
 	Data  interface{} `json:"data"`
 	Count int64       `json:"count"`
 }
 
-func newErrorResponse(c *gin.Context, statusCode int, message string) {
+func NewErrorResponse(c *gin.Context, statusCode int, message string) {
 	logrus.Error(message)
-	c.AbortWithStatusJSON(statusCode, errorResponse{message})
+	c.AbortWithStatusJSON(statusCode, ErrorResponse{message})
 }

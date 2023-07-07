@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
+	"github.com/itoqsky/InnoCoTravel-backend/pkg/response"
 )
 
 func (h *Handler) initAuthRoutes(api *gin.RouterGroup) {
@@ -19,31 +20,16 @@ func (h *Handler) initAuthRoutes(api *gin.RouterGroup) {
 	}
 }
 
-//	@Summary		SignUp
-//	@Tags			auth
-//	@Description	create account
-//	@ModuleID		signUp
-//	@ID				create-account
-//	@Accept			json
-//	@Produce		json
-//	@Param			input	body		core.User	true	"sign up info"
-//	@Success		200		{integer}	integer
-//	@Failure		400		{object}	errorResponse
-//	@Failure		404		{object}	errorResponse
-//	@Failure		500		{object}	errorResponse
-//	@Failure		default	{object}	errorResponse
-//	@Router			/auth/sign-up [post]
-
 func (h *Handler) signUp(c *gin.Context) {
 	var user core.User
 	if err := c.BindJSON(&user); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	id, err := h.services.Authorization.CreateUser(user)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -61,25 +47,11 @@ type tokenResponse struct {
 	Token string `json:"token"`
 }
 
-//	@Summary		SignIn
-//	@Tags			auth
-//	@Description	sign in
-//	@ID				sign-in
-//	@Accept			json
-//	@Produce		json
-//	@Param			input	body		signInInput	true	"sign in info"
-//	@Success		200		{object}	tokenResponse
-//	@Failure		400		{object}	errorResponse
-//	@Failure		404		{object}	errorResponse
-//	@Failure		500		{object}	errorResponse
-//	@Failure		default	{object}	errorResponse
-//	@Router			/auth/sign-in [post]
-
 func (h *Handler) signIn(c *gin.Context) {
 	var userSignInObj signInInput
 
 	if err := c.BindJSON(&userSignInObj); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -90,13 +62,13 @@ func (h *Handler) signIn(c *gin.Context) {
 
 	userId, err := h.services.Authorization.GetUserId(user)
 	if err != nil {
-		newErrorResponse(c, http.StatusUnauthorized, err.Error())
+		response.NewErrorResponse(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 
 	token, err := h.services.Authorization.GenerateToken(core.UserCtx{UserId: userId, Username: user.Username})
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -136,20 +108,6 @@ const (
 	webAppKeyword = "WebAppData"
 )
 
-//	@Summary		TGLogin
-//	@Tags			auth
-//	@Description	user tg login
-//	@ID				tg-login
-//	@Accept			json
-//	@Produce		json
-//	@Param			input	body		TgLoginInput	true	"tg login info"
-//	@Success		200		{object}	tokenResponse
-//	@Failure		400		{object}	errorResponse
-//	@Failure		404		{object}	errorResponse
-//	@Failure		500		{object}	errorResponse
-//	@Failure		default	{object}	errorResponse
-//	@Router			/auth/tg-login [post]
-
 func (h *Handler) tgLogIn(c *gin.Context) {
 	var (
 		rawTgUser TgLoginInput
@@ -165,7 +123,7 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 	var err error
 
 	if err = c.BindJSON(&rawTgUser); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if rawTgUser.User == "" {
@@ -179,7 +137,7 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 		jsonData, _ = json.Marshal(rawTgUser)
 		err = json.Unmarshal(jsonData, &tgUserWS)
 		if err != nil {
-			newErrorResponse(c, http.StatusInternalServerError, err.Error())
+			response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -189,23 +147,23 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 		var userField map[string]interface{}
 		err = json.Unmarshal([]byte(rawTgUser.User), &userField)
 		if err != nil {
-			newErrorResponse(c, http.StatusInternalServerError, err.Error())
+			response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 			return
 		}
 		for k, v := range userField {
 			if k != "first_name" && k != "last_name" && k != "username" && k != "id" && k != "language_code" {
-				newErrorResponse(c, http.StatusBadRequest, "incorrect keys of user field from telegram webapp")
+				response.NewErrorResponse(c, http.StatusBadRequest, "incorrect keys of user field from telegram webapp")
 				return
 			}
 			if k == "id" {
 				if _, ok := v.(float64); !ok {
-					newErrorResponse(c, http.StatusBadRequest, "incorrect value of id in user field from telegram webapp")
+					response.NewErrorResponse(c, http.StatusBadRequest, "incorrect value of id in user field from telegram webapp")
 					return
 				}
 				userField[k] = int(v.(float64))
 			} else {
 				if _, ok := v.(string); !ok {
-					newErrorResponse(c, http.StatusBadRequest, "incorrect assertion string in user field from telegram webapp")
+					response.NewErrorResponse(c, http.StatusBadRequest, "incorrect assertion string in user field from telegram webapp")
 					return
 				}
 			}
@@ -221,7 +179,7 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 		jsonData, _ = json.Marshal(rawTgUser)
 		err = json.Unmarshal(jsonData, &tgUserWA)
 		if err != nil {
-			newErrorResponse(c, http.StatusInternalServerError, err.Error())
+			response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -229,18 +187,18 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 		err = json.Unmarshal(jsonData, &authData)
 	}
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	ok, err := h.services.Authorization.VerifyTgAuthData(authData, keyword)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if !ok {
-		newErrorResponse(c, http.StatusBadRequest, "Data is NOT from telegram")
+		response.NewErrorResponse(c, http.StatusBadRequest, "Data is NOT from telegram")
 		return
 	}
 
@@ -248,14 +206,14 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 	if err != nil {
 		userId, err = h.services.Authorization.CreateUser(user)
 		if err != nil {
-			newErrorResponse(c, http.StatusBadRequest, err.Error())
+			response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 			return
 		}
 	}
 
 	token, err := h.services.Authorization.GenerateToken(core.UserCtx{UserId: userId, Username: user.Username})
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 

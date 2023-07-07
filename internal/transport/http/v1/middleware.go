@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
+	"github.com/itoqsky/InnoCoTravel-backend/pkg/response"
 )
 
 var BotToken = os.Getenv("BOT_TOKEN")
@@ -26,7 +27,7 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	if header != "" {
 		headerParts := strings.Split(header, " ")
 		if len(headerParts) != 2 {
-			newErrorResponse(c, http.StatusUnauthorized, "incorrect passing of header!")
+			response.NewErrorResponse(c, http.StatusUnauthorized, "incorrect passing of header!")
 			return
 		}
 		token = headerParts[1]
@@ -34,14 +35,14 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		url := c.Request.URL
 		token = url.Query().Get("token")
 		if len(token) == 0 {
-			newErrorResponse(c, http.StatusUnauthorized, "empty url token param")
+			response.NewErrorResponse(c, http.StatusUnauthorized, "empty url token param")
 			return
 		}
 	}
 
 	uctx, err := h.services.Authorization.ParseToken(token)
 	if err != nil {
-		newErrorResponse(c, http.StatusUnauthorized, err.Error())
+		response.NewErrorResponse(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 

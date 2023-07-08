@@ -9,8 +9,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel-backend/pkg/response"
 )
 
@@ -53,14 +55,10 @@ func (h *Handler) createTrip(c *gin.Context) {
 		return
 	}
 
-	reqData := CreateRoomReq{
-		ID:   strconv.Itoa(int(tripId)),
-		Name: fmt.Sprintf("%s_to_%s_at_%s", getNameOfPoint(trip.FromPoint), getNameOfPoint(trip.ToPoint), trip.ChosenTimestamp),
-	}
-
-	if err := doRequest(reqData); err != nil {
-		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
+	h.hub.Rooms[strconv.Itoa(tripId)] = &server.Room{
+		Id:      strconv.Itoa(tripId),
+		Name:    fmt.Sprintf("%s->%s_at_%s", getNameOfPoint(trip.FromPoint), getNameOfPoint(trip.ToPoint), trip.ChosenTimestamp),
+		Clients: make(map[string]*server.Client),
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
@@ -171,6 +169,53 @@ func (h *Handler) getAdjacentTrips(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.DataResponse{Data: trips})
+}
+
+func (h *Handler) initWsTripsRoutes(api *gin.RouterGroup) {
+	trip := api.Group("/ws")
+	{
+		trip.GET("/joinRoom/:trip_id", h.joinTrip)
+	}
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+func (h *Handler) joinTrip(c *gin.Context) {
+	roomID := c.Param("trip_id")
+	clientID := c.Query("user_id")
+	username := c.Query("username")
+
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	cl := &server.Client{
+		Conn:     conn,
+		Message:  make(chan *server.Message, 10),
+		Id:       clientID,
+		RoomId:   roomID,
+		Username: username,
+	}
+
+	m := &server.Message{
+		Content:  fmt.Sprintf(`the user '%s' has joined the trip`, username),
+		RoomId:   roomID,
+		Username: username,
+	}
+
+	h.hub.Register <- cl
+	h.hub.Broadcast <- m
+
+	go cl.WriteMessage()
+	cl.ReadMessage(h.hub)
 }
 
 // func (h *Handler) getCoTravellers(c *gin.Context) {

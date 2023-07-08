@@ -123,7 +123,7 @@ func (s *AuthService) VerifyTgAuthData(authData map[string]interface{}, keyword 
 	h.Write([]byte(dataCheckString))
 	hash := hex.EncodeToString(h.Sum(nil))
 
-	log.Printf("\nsecretkey: %s\nkeyword: %s\n", hex.EncodeToString(secretKey), keyword)
+	log.Printf("\nsecretkey: %s\nkeyword: %s\nhash: %s\nchechHash: %s", hex.EncodeToString(secretKey), keyword, hash, checkHash)
 
 	if hash != checkHash {
 		return false, fmt.Errorf("the hashes don't match")

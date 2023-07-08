@@ -8,16 +8,18 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
 	v1 "github.com/itoqsky/InnoCoTravel-backend/internal/transport/http/v1"
 )
 
 type Handler struct {
+	hub      *server.Hub
 	services *service.Service
 }
 
-func NewHandler(s *service.Service) *Handler {
-	return &Handler{services: s}
+func NewHandler(s *service.Service, h *server.Hub) *Handler {
+	return &Handler{services: s, hub: h}
 }
 
 func (h *Handler) Init() *gin.Engine {
@@ -42,9 +44,14 @@ func (h *Handler) Init() *gin.Engine {
 }
 
 func (h *Handler) initAPI(router *gin.Engine) {
-	handlerV1 := v1.NewHandler(h.services)
+	handlerV1 := v1.NewHandler(h.services, h.hub)
 	api := router.Group("/api")
 	{
 		handlerV1.InitV1(api)
 	}
+
+	// ws := router.Group("/ws")
+	// {
+	// 	handlerV1.InitV1(ws)
+	// }
 }

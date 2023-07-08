@@ -1,6 +1,8 @@
 package server
 
 import (
+	"log"
+
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 )
@@ -50,6 +52,8 @@ func (c *Client) ReadMessage(hub *Hub) {
 			RoomId:   c.RoomId,
 			Username: c.Username,
 		}
+
+		log.Print(msg)
 		hub.Broadcast <- msg
 	}
 }

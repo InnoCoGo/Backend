@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -64,22 +66,6 @@ func (h *Handler) createTrip(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"trip_id": tripId,
 	})
-}
-
-func doRequest(reqData CreateRoomReq) error {
-	u := url.URL{
-		Scheme: "http",
-		Host:   os.Getenv("CHAT_HOST"),
-		Path:   path.Join("ws", "createRoom"),
-	}
-
-	q := u.Query()
-	q.Set("id", reqData.ID)
-	q.Set("name", reqData.Name)
-	u.RawQuery = q.Encode()
-
-	_, err := http.Get(u.String())
-	return err
 }
 
 func getNameOfPoint(p int) string {
@@ -187,9 +173,32 @@ var upgrader = websocket.Upgrader{
 }
 
 func (h *Handler) joinTrip(c *gin.Context) {
-	roomID := c.Param("trip_id")
+	uctx, err := getUserCtx(c)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	roomID, err := strconv.Atoi(c.Param("trip_id"))
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	clientID := c.Query("user_id")
+	clientIDInt, err := strconv.Atoi(clientID)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	username := c.Query("username")
+
+	err = doRequest(uctx.UserId, roomID, clientIDInt)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
 
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -201,13 +210,13 @@ func (h *Handler) joinTrip(c *gin.Context) {
 		Conn:     conn,
 		Message:  make(chan *server.Message, 10),
 		Id:       clientID,
-		RoomId:   roomID,
+		RoomId:   strconv.Itoa(roomID),
 		Username: username,
 	}
 
 	m := &server.Message{
 		Content:  fmt.Sprintf(`the user '%s' has joined the trip`, username),
-		RoomId:   roomID,
+		RoomId:   strconv.Itoa(roomID),
 		Username: username,
 	}
 
@@ -216,6 +225,28 @@ func (h *Handler) joinTrip(c *gin.Context) {
 
 	go cl.WriteMessage()
 	cl.ReadMessage(h.hub)
+}
+
+func doRequest(adminId, tripId, cliendId int) error {
+	u := url.URL{
+		Scheme: "http",
+		Host:   os.Getenv("TG_BOT_URL"),
+		Path:   path.Join("/", "join_request"),
+	}
+
+	reqbody, err := json.Marshal(map[string]interface{}{
+		"trip_admin_id":               adminId,
+		"secret_token":                "wadsasdadasd",
+		"trip_id":                     tripId,
+		"id_of_person_asking_to_join": cliendId,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := http.Post(u.String(), "application/json", bytes.NewBuffer(reqbody))
+	defer func() { _ = res.Body.Close() }()
+	return err
 }
 
 // func (h *Handler) getCoTravellers(c *gin.Context) {

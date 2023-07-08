@@ -8,11 +8,11 @@ import (
 
 type Handler struct {
 	hub         *server.Hub
-	authService *service.AuthService
+	authService *service.Service
 }
 
-func NewHandler(hub *server.Hub, authService *service.AuthService) *Handler {
-	return &Handler{hub, authService}
+func NewHandler(h *server.Hub, s *service.Service) *Handler {
+	return &Handler{h, s}
 }
 
 func (h *Handler) InitWsRoutes() *gin.Engine {

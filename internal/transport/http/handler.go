@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -10,6 +11,7 @@ import (
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
 	v1 "github.com/itoqsky/InnoCoTravel-backend/internal/transport/http/v1"
+	"github.com/itoqsky/InnoCoTravel-backend/pkg/limiter"
 )
 
 type Handler struct {
@@ -26,7 +28,7 @@ func (h *Handler) Init() *gin.Engine {
 	router.Use(
 		gin.Recovery(),
 		gin.Logger(),
-		// TODO: Limiter
+		limiter.Limit(10, 2, 10*time.Minute),
 		corsMiddleware,
 	)
 

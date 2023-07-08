@@ -17,7 +17,7 @@ func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
 
 		trip.GET("/:id", h.getTrip)
 		trip.GET("/", h.getJoinedTrips)
-		trip.GET("/", h.getJoinedUsers)
+		trip.GET("/:id/users", h.getJoinedUsers)
 
 		trip.PUT("/adjacent", h.getAdjacentTrips)
 	}

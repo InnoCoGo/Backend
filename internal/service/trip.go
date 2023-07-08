@@ -36,3 +36,7 @@ func (s *TripService) GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error)
 func (s *TripService) GetJoinedTrips(userId int) ([]core.Trip, error) {
 	return s.repo.GetJoinedTrips(userId)
 }
+
+func (s *TripService) GetJoinedUsers(userId, tripId int) ([]core.UserCtx, error) {
+	return s.repo.GetJoinedUsers(userId, tripId)
+}

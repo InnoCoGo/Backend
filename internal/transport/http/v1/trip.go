@@ -13,9 +13,11 @@ func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
 	trip := api.Group("/trip", h.userIdentity)
 	{
 		trip.POST("/", h.createTrip)
-		trip.GET("/", h.getJoinedTrips)
-		trip.GET("/:id", h.getTrip)
 		trip.DELETE("/:id", h.deleteTrip)
+
+		trip.GET("/:id", h.getTrip)
+		trip.GET("/", h.getJoinedTrips)
+		trip.GET("/", h.getJoinedUsers)
 
 		trip.PUT("/adjacent", h.getAdjacentTrips)
 	}
@@ -207,6 +209,24 @@ func (h *Handler) getAdjacentTrips(c *gin.Context) {
 	c.JSON(http.StatusOK, dataResponse{Data: trips})
 }
 
-func (h *Handler) updateTrip(c *gin.Context) {
+func (h *Handler) getJoinedUsers(c *gin.Context) {
+	uctx, err := getUserCtx(c)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
 
+	tripId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	users, err := h.services.Trip.GetJoinedUsers(uctx.UserId, tripId)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, dataResponse{Data: users})
 }

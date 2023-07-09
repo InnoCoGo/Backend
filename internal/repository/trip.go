@@ -133,9 +133,11 @@ func (r *TripPostgres) GetJoinedTrips(userId int) ([]core.Trip, error) {
 	var dest []core.Trip
 	query := fmt.Sprintf(`SELECT t.*
 						FROM 
-							%s as t, %s as u 
+							%s as t
+						INNER JOIN %s as ut 
+							ON  ut.trip_id = t.id
 						WHERE 
-							u.user_id = $1`, tripsTable, usersTripsTable)
+							ut.user_id = $1`, tripsTable, usersTripsTable)
 	err := r.db.Select(&dest, query, userId)
 	return dest, err
 }

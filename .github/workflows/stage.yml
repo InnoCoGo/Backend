@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - develop
 
 env:
   REGISTRY: "innocotravel"
@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Accessing DockerHub from server
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@develop
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}

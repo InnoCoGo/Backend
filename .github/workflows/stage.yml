@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Accessing DockerHub from server
-        uses: appleboy/ssh-action@develop
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}

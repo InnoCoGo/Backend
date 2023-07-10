@@ -16,3 +16,7 @@ func NewUserService(repo repository.User) *UserService {
 func (s *UserService) GetUserInfo(id int) (core.User, error) {
 	return s.repo.GetUserInfo(id)
 }
+
+func (s *UserService) JoinTrip(userId, tripId int) error {
+	return s.repo.JoinTrip(userId, tripId)
+}

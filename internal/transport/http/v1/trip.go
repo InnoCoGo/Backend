@@ -1,17 +1,11 @@
 package v1
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"os"
-	"path"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
@@ -57,10 +51,10 @@ func (h *Handler) createTrip(c *gin.Context) {
 		return
 	}
 
-	h.hub.Rooms[strconv.Itoa(tripId)] = &server.Room{
-		Id:      strconv.Itoa(tripId),
-		Name:    fmt.Sprintf("%s->%s_at_%s", getNameOfPoint(trip.FromPoint), getNameOfPoint(trip.ToPoint), trip.ChosenTimestamp),
-		Clients: make(map[string]*server.Client),
+	h.hub.Rooms[tripId] = &server.Room{
+		Id:      tripId,
+		Name:    getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp),
+		Clients: make(map[int]*server.Client),
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
@@ -77,6 +71,10 @@ func getNameOfPoint(p int) string {
 		return "AIRPORT_KZN"
 	}
 	return "BRUH"
+}
+
+func getTripName(from, to int, timestamp string) string {
+	return fmt.Sprintf("from %s to %s at %s", getNameOfPoint(from), getNameOfPoint(to), timestamp)
 }
 
 func (h *Handler) getJoinedTrips(c *gin.Context) {
@@ -96,11 +94,11 @@ func (h *Handler) getJoinedTrips(c *gin.Context) {
 }
 
 func (h *Handler) getTrip(c *gin.Context) {
-	uctx, err := getUserCtx(c)
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
+	// uctx, err := getUserCtx(c)
+	// if err != nil {
+	// 	response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+	// 	return
+	// }
 
 	tripId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -108,7 +106,7 @@ func (h *Handler) getTrip(c *gin.Context) {
 		return
 	}
 
-	trip, err := h.services.Trip.GetById(uctx.UserId, tripId)
+	trip, err := h.services.Trip.GetById(tripId)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -156,114 +154,3 @@ func (h *Handler) getAdjacentTrips(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response.DataResponse{Data: trips})
 }
-
-func (h *Handler) initWsTripsRoutes(api *gin.RouterGroup) {
-	trip := api.Group("/ws")
-	{
-		trip.GET("/joinRoom/:trip_id", h.joinTrip)
-	}
-}
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
-func (h *Handler) joinTrip(c *gin.Context) {
-	uctx, err := getUserCtx(c)
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	roomID, err := strconv.Atoi(c.Param("trip_id"))
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	clientID := c.Query("user_id")
-	clientIDInt, err := strconv.Atoi(clientID)
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	username := c.Query("username")
-
-	err = doRequest(uctx.UserId, roomID, clientIDInt)
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	cl := &server.Client{
-		Conn:     conn,
-		Message:  make(chan *server.Message, 10),
-		Id:       clientID,
-		RoomId:   strconv.Itoa(roomID),
-		Username: username,
-	}
-
-	m := &server.Message{
-		Content:  fmt.Sprintf(`the user '%s' has joined the trip`, username),
-		RoomId:   strconv.Itoa(roomID),
-		Username: username,
-	}
-
-	h.hub.Register <- cl
-	h.hub.Broadcast <- m
-
-	go cl.WriteMessage()
-	cl.ReadMessage(h.hub)
-}
-
-func doRequest(adminId, tripId, cliendId int) error {
-	u := url.URL{
-		Scheme: "http",
-		Host:   os.Getenv("TG_BOT_URL"),
-		Path:   path.Join("/", "join_request"),
-	}
-
-	reqbody, err := json.Marshal(map[string]interface{}{
-		"trip_admin_id":               adminId,
-		"secret_token":                "wadsasdadasd",
-		"trip_id":                     tripId,
-		"id_of_person_asking_to_join": cliendId,
-	})
-	if err != nil {
-		return err
-	}
-
-	res, err := http.Post(u.String(), "application/json", bytes.NewBuffer(reqbody))
-	defer func() { _ = res.Body.Close() }()
-	return err
-}
-
-// func (h *Handler) getCoTravellers(c *gin.Context) {
-// 	uctx, err := getUserCtx(c)
-// 	if err != nil {
-// 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
-
-// 	tripId, err := strconv.Atoi(c.Param("id"))
-// 	if err != nil {
-// 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-// 		return
-// 	}
-
-// }
-
-// func (h *Handler) updateTrip(c *gin.Context) {
-
-// }

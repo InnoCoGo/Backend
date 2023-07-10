@@ -21,3 +21,9 @@ func (r *UserPostgres) GetUserInfo(id int) (core.User, error) {
 	err := r.db.Get(&destUser, query, id)
 	return destUser, err
 }
+
+func (r *UserPostgres) JoinTrip(userId, tripId int) error {
+	query := fmt.Sprintf(`INSERT INTO %s (user_id, trip_id) VALUES ($1, $2)`, usersTripsTable)
+	_, err := r.db.Exec(query, userId, tripId)
+	return err
+}

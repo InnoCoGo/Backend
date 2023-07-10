@@ -43,18 +43,10 @@ func (r *TripPostgres) Create(trip core.Trip) (int, error) {
 	return id, tx.Commit()
 }
 
-func (r *TripPostgres) GetById(userId, tripId int) (core.Trip, error) {
-	query := fmt.Sprintf(`SELECT *
-						FROM 
-							%s t
-						INNER JOIN %s ut
-							ON  ut.trip_id = t.id
-						WHERE ut.user_id=$1
-							AND ut.trip_id=$2
-	`, tripsTable, usersTripsTable)
+func (r *TripPostgres) GetById(tripId int) (core.Trip, error) {
 	var trip core.Trip
-	err := r.db.Get(&trip, query, userId, tripId)
-
+	query := fmt.Sprintf(`SELECT * FROM %s WHERE t.id=$1`, tripsTable)
+	err := r.db.Get(&trip, query, tripId)
 	return trip, err
 }
 

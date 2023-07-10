@@ -15,7 +15,7 @@ import (
 func (h *Handler) initUsersRoutes(api *gin.RouterGroup) {
 	user := api.Group("/user")
 	{
-		user.POST("/sendReqJoinTrip", h.joinTripSendReq)
+		user.POST("/send_req_join_trip", h.joinTripSendReq)
 		user.GET("/get_req_from_ bot", h.getReqFromBot)
 	}
 }

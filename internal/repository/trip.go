@@ -45,7 +45,7 @@ func (r *TripPostgres) Create(trip core.Trip) (int, error) {
 
 func (r *TripPostgres) GetById(tripId int) (core.Trip, error) {
 	var trip core.Trip
-	query := fmt.Sprintf(`SELECT * FROM %s WHERE t.id=$1`, tripsTable)
+	query := fmt.Sprintf(`SELECT * FROM %s t WHERE t.id=$1`, tripsTable)
 	err := r.db.Get(&trip, query, tripId)
 	return trip, err
 }

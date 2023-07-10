@@ -66,7 +66,7 @@ func (h *Handler) createTrip(c *gin.Context) {
 
 func getNameOfPoint(p int) string {
 	if p == 1 {
-		return "INN"
+		return "INNO"
 	} else if p == 2 {
 		return "KZN"
 	} else if p == 3 {
@@ -76,7 +76,7 @@ func getNameOfPoint(p int) string {
 }
 
 func getTripName(from, to int, timestamp string) string {
-	return fmt.Sprintf("from %s to %s at %s", getNameOfPoint(from), getNameOfPoint(to), timestamp)
+	return fmt.Sprintf("%s -> %s at:%s", getNameOfPoint(from), getNameOfPoint(to), timestamp)
 }
 
 func (h *Handler) getJoinedTrips(c *gin.Context) {

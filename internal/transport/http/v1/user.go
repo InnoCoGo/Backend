@@ -15,21 +15,24 @@ import (
 func (h *Handler) initUsersRoutes(api *gin.RouterGroup) {
 	user := api.Group("/user")
 	{
-		user.POST("/send_req_join_trip", h.joinTripSendReq)
-		user.GET("/get_req_from_ bot", h.getReqFromBot)
+		jt := user.Group("/join_trip")
+		{
+			jt.POST("/redirect", h.redirectReqToBot)
+			jt.PUT("/get_req_from_bot", h.getReqFromBot)
+		}
 	}
 }
 
-func (h *Handler) joinTripSendReq(c *gin.Context) {
-	// uctx, err := getUserCtx(c)
-	// if err != nil {
-	// 	response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-	// 	return
-	// }
+func (h *Handler) redirectReqToBot(c *gin.Context) {
+	uctx, err := getUserCtx(c)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
 
 	var input joinRequest
 
-	if err := c.BindJSON(&input); err != nil {
+	if err := c.BindJSON(&input); err != nil && input.UserId != uctx.UserId {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -47,9 +50,11 @@ func (h *Handler) joinTripSendReq(c *gin.Context) {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
 }
 
-func (h *Handler) getReqFromBot(c *gin.Context) {
+func (h *Handler) getReqFromBot(c *gin.Context) { // TODO: webhook
 	var input joinRequest
 	if err := c.BindJSON(&input); err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -61,14 +66,14 @@ func (h *Handler) getReqFromBot(c *gin.Context) {
 		return
 	}
 
-	if err := h.services.User.JoinTrip(input.UserId, input.TripId); err != nil {
-		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
+	if input.Accepted {
+		if err := h.services.User.JoinTrip(input.UserId, input.TripId); err != nil {
+			response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"status": "ok",
-	})
+	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
 }
 
 type joinRequest struct {
@@ -76,6 +81,7 @@ type joinRequest struct {
 	TripId      int    `json:"trip_id" binding:"required"`
 	UserId      int    `json:"id_of_person_asking_to_join" binding:"required"`
 	SecretToken string `json:"secret_token"`
+	Accepted    bool   `json:"accepted"`
 	TripName    string `json:"trip_name"`
 }
 
@@ -93,6 +99,10 @@ func doRequest(host, p string, join_req_body joinRequest) error {
 	}
 
 	res, err := http.Post(u.String(), "application/json", bytes.NewBuffer(reqbody))
-	defer func() { _ = res.Body.Close() }()
+	defer func() {
+		if res != nil {
+			_ = res.Body.Close()
+		}
+	}()
 	return err
 }

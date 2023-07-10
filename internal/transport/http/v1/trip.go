@@ -16,9 +16,11 @@ func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
 	trip := api.Group("/trip", h.userIdentity)
 	{
 		trip.POST("/", h.createTrip)
-		trip.GET("/", h.getJoinedTrips)
-		trip.GET("/:id", h.getTrip)
 		trip.DELETE("/:id", h.deleteTrip)
+
+		trip.GET("/:id", h.getTrip)
+		trip.GET("/", h.getJoinedTrips)
+		trip.GET("/:id/users", h.getJoinedUsers)
 
 		trip.PUT("/adjacent", h.getAdjacentTrips)
 	}

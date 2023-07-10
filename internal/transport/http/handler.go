@@ -28,7 +28,7 @@ func (h *Handler) Init() *gin.Engine {
 	router.Use(
 		gin.Recovery(),
 		gin.Logger(),
-		// TODO: Limiter
+		// limiter.Limit(10, 2, 10*time.Minute),
 		corsMiddleware,
 	)
 

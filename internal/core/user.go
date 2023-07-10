@@ -12,6 +12,6 @@ type User struct {
 }
 
 type UserCtx struct {
-	UserId   int
-	Username string
+	UserId   int    `json:"user_id" db:"id"`
+	Username string `json:"username" db:"username"`
 }

@@ -156,3 +156,25 @@ func (h *Handler) getAdjacentTrips(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response.DataResponse{Data: trips})
 }
+
+func (h *Handler) getJoinedUsers(c *gin.Context) {
+	uctx, err := getUserCtx(c)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	tripId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	users, err := h.services.Trip.GetJoinedUsers(uctx.UserId, tripId)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, response.DataResponse{Data: users})
+}

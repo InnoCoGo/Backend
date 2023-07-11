@@ -32,7 +32,7 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 
 	var input joinRequest
 
-	if err := c.BindJSON(&input); err != nil && input.UserId != uctx.UserId {
+	if err := c.BindJSON(&input); err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -42,10 +42,16 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
+	if trip.AdminId != input.AdminId {
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
 
+	input.UserId = uctx.UserId
 	input.TripName = getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp)
+	input.SecretToken = os.Getenv("BACKEND_SECRET_TOKEN")
 
-	err = doRequest(path.Join("/", "join_request"), os.Getenv("TG_BOT_URL"), input)
+	err = doRequest(http.MethodPost, os.Getenv("TG_BOT_URL"), path.Join("/", "join_request"), input)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -79,26 +85,33 @@ func (h *Handler) getReqFromBot(c *gin.Context) { // TODO: webhook
 type joinRequest struct {
 	AdminId     int    `json:"trip_admin_id" binding:"required"`
 	TripId      int    `json:"trip_id" binding:"required"`
-	UserId      int    `json:"id_of_person_asking_to_join" binding:"required"`
+	UserId      int    `json:"id_of_person_asking_to_join"`
 	SecretToken string `json:"secret_token"`
 	Accepted    bool   `json:"accepted"`
 	TripName    string `json:"trip_name"`
 }
 
-func doRequest(host, p string, join_req_body joinRequest) error {
+func doRequest(methd, host, p string, bodyStruct interface{}) error {
 	u := url.URL{
 		Scheme: "http",
 		Host:   host,
 		Path:   p,
 	}
 
-	reqbody, err := json.Marshal(join_req_body)
-
+	body, err := json.Marshal(bodyStruct)
 	if err != nil {
 		return err
 	}
 
-	res, err := http.Post(u.String(), "application/json", bytes.NewBuffer(reqbody))
+	httpCl := http.Client{}
+	req, err := http.NewRequest(methd, u.String(), bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := httpCl.Do(req)
+
 	defer func() {
 		if res != nil {
 			_ = res.Body.Close()

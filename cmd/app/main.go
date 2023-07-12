@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/kafka"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/repository"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
@@ -44,11 +45,13 @@ func main() {
 		DBName:   viper.GetString("db.dbname"),
 		SSLMode:  viper.GetString("db.sslmode"),
 	})
-
 	if err != nil {
 		logrus.Fatalf("error occured while connecting  to db: %s", err.Error())
 		return
 	}
+
+	kafka.InitProducer(os.Getenv("KAFKA_TOPIC"), os.Getenv("KAFKA_HOSTS"))
+	kafka.InitConsumer(os.Getenv("KAFKA_HOSTS"))
 
 	hub := server.NewHub()
 	go hub.Run()

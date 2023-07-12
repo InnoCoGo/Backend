@@ -7,18 +7,19 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/itoqsky/InnoCoTravel-backend/pkg/response"
 )
 
 func (h *Handler) initUsersRoutes(api *gin.RouterGroup) {
-	user := api.Group("/user")
+	user := api.Group("/user", h.userIdentity)
 	{
 		jt := user.Group("/join_trip")
 		{
-			jt.POST("/redirect", h.redirectReqToBot)
-			jt.PUT("/get_req_from_bot", h.getReqFromBot)
+			jt.POST("/req/:trip_id", h.redirectReqToBot)
+			jt.PUT("/res", h.getResFromBot)
 		}
 	}
 }
@@ -30,28 +31,26 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 		return
 	}
 
-	var input joinRequest
-
-	if err := c.BindJSON(&input); err != nil {
+	trip_id, err := strconv.Atoi(c.Param("trip_id"))
+	if err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	trip, err := h.services.Trip.GetById(input.TripId)
+	trip, err := h.services.Trip.GetById(trip_id)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	if trip.AdminId != input.AdminId {
-		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
+	var redirectReq = joinRequest{
+		UserId:      uctx.UserId,
+		AdminId:     trip.AdminId,
+		TripId:      trip_id,
+		SecretToken: os.Getenv("BACKEND_SECRET_TOKEN"),
+		TripName:    getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp),
 	}
 
-	input.UserId = uctx.UserId
-	input.TripName = getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp)
-	input.SecretToken = os.Getenv("BACKEND_SECRET_TOKEN")
-
-	err = doRequest(http.MethodPost, os.Getenv("TG_BOT_URL"), path.Join("/", "join_request"), input)
+	err = doRequest(http.MethodPost, os.Getenv("TG_BOT_URL"), path.Join("/", "join_request"), redirectReq)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -60,7 +59,7 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
 }
 
-func (h *Handler) getReqFromBot(c *gin.Context) { // TODO: webhook
+func (h *Handler) getResFromBot(c *gin.Context) { // TODO: webhook
 	var input joinRequest
 	if err := c.BindJSON(&input); err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -83,10 +82,10 @@ func (h *Handler) getReqFromBot(c *gin.Context) { // TODO: webhook
 }
 
 type joinRequest struct {
-	AdminId     int    `json:"trip_admin_id" binding:"required"`
+	AdminId     int    `json:"trip_admin_id"`
 	TripId      int    `json:"trip_id" binding:"required"`
-	UserId      int    `json:"id_of_person_asking_to_join"`
-	SecretToken string `json:"secret_token"`
+	UserId      int    `json:"id_of_person_asking_to_join" binding:"required"`
+	SecretToken string `json:"secret_token" binding:"required"`
 	Accepted    bool   `json:"accepted"`
 	TripName    string `json:"trip_name"`
 }

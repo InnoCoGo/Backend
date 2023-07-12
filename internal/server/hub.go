@@ -22,6 +22,10 @@ func NewHub() *Hub {
 	}
 }
 
+func (hub *Hub) ConsumerKafkaMsg(msg *Message) {
+	hub.Broadcast <- msg
+}
+
 func (h *Hub) Run() {
 	for {
 		select {

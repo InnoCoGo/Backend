@@ -4,12 +4,13 @@ import (
 	"strings"
 
 	"github.com/Shopify/sarama"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/sirupsen/logrus"
 )
 
 var consumer sarama.Consumer
 
-type ConsumerCallback func(data []byte)
+type ConsumerCallback func(msg *server.Message)
 
 func InitConsumer(hosts string) {
 	config := sarama.NewConfig()
@@ -24,7 +25,7 @@ func InitConsumer(hosts string) {
 	}
 }
 
-func ConsumerMsg(callBack ConsumerCallback) {
+func Consume(callBack ConsumerCallback) {
 	partitionConsumer, err := consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
 	if nil != err {
 		logrus.Errorf("consume partition error: %s", err.Error())
@@ -35,7 +36,10 @@ func ConsumerMsg(callBack ConsumerCallback) {
 	for {
 		msg := <-partitionConsumer.Messages()
 		if nil != callBack {
-			callBack(msg.Value)
+			callBack(&server.Message{
+				Content: string(msg.Value),
+				RoomId:  0,
+			})
 		}
 	}
 }

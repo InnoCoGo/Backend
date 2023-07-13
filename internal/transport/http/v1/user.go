@@ -44,8 +44,8 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 		return
 	}
 	var redirectReq = joinRequest{
-		UserId:      uctx.UserId,
-		AdminId:     trip.AdminId,
+		UserId:      uctx.TgId,
+		AdminId:     trip.AdminTgId,
 		TripId:      int64(trip_id),
 		SecretToken: os.Getenv("BACKEND_SECRET_TOKEN"),
 		TripName:    getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp),

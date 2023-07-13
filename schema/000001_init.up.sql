@@ -17,6 +17,7 @@ create table trips(
     admin_id bigint not null,
     admin_username varchar(256),
     admin_tg_id bigint,
+    
 	is_driver        boolean         not null,
 
 	places_max          int             not null,

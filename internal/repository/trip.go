@@ -24,9 +24,9 @@ func (r *TripPostgres) Create(trip core.Trip) (int64, error) {
 	}
 
 	var id int64
-	createTripQuery := fmt.Sprintf(`INSERT INTO %s (admin_id, admin_username, is_driver, places_max, places_taken, chosen_timestamp, from_point, to_point, description)
+	createTripQuery := fmt.Sprintf(`INSERT INTO %s (admin_id, admin_username, admin_tg_id, is_driver, places_max, places_taken, chosen_timestamp, from_point, to_point, description)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`, tripsTable)
-	row := tx.QueryRow(createTripQuery, trip.AdminId, trip.AdminUsername, trip.IsDriver, trip.PlacesMax, trip.PlacesTaken, trip.ChosenTimestamp, trip.FromPoint, trip.ToPoint, trip.Description)
+	row := tx.QueryRow(createTripQuery, trip.AdminId, trip.AdminUsername, trip.AdminTgId, trip.IsDriver, trip.PlacesMax, trip.PlacesTaken, trip.ChosenTimestamp, trip.FromPoint, trip.ToPoint, trip.Description)
 	if err := row.Scan(&id); err != nil {
 		tx.Rollback()
 		return 0, err

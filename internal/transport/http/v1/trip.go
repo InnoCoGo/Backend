@@ -46,6 +46,7 @@ func (h *Handler) createTrip(c *gin.Context) {
 
 	trip.AdminId = uctx.UserId
 	trip.AdminUsername = uctx.Username
+	trip.AdminTgId = uctx.TgId
 
 	tripId, err := h.services.Trip.Create(trip)
 	if err != nil {

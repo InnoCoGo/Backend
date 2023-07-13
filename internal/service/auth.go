@@ -85,6 +85,7 @@ func (s *AuthService) ParseToken(accessToken string) (core.UserCtx, error) {
 	return core.UserCtx{
 		UserId:   claims.UserId,
 		Username: claims.Username,
+		TgId:     claims.UserTgId,
 	}, nil
 }
 

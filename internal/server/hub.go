@@ -1,13 +1,13 @@
 package server
 
 type Room struct {
-	Id      int             `json:"room_id"`
-	Name    string          `json:"room_name"`
-	Clients map[int]*Client `json:"clients"`
+	Id      int64             `json:"room_id"`
+	Name    string            `json:"room_name"`
+	Clients map[int64]*Client `json:"clients"`
 }
 
 type Hub struct {
-	Rooms      map[int]*Room
+	Rooms      map[int64]*Room
 	Register   chan *Client
 	Unregister chan *Client
 	Broadcast  chan *Message
@@ -15,7 +15,7 @@ type Hub struct {
 
 func NewHub() *Hub {
 	return &Hub{
-		Rooms:      make(map[int]*Room),
+		Rooms:      make(map[int64]*Room),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		Broadcast:  make(chan *Message, 5),

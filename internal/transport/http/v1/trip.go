@@ -56,7 +56,7 @@ func (h *Handler) createTrip(c *gin.Context) {
 	h.hub.Rooms[tripId] = &server.Room{
 		Id:      tripId,
 		Name:    getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp),
-		Clients: make(map[int]*server.Client),
+		Clients: make(map[int64]*server.Client),
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
@@ -108,7 +108,7 @@ func (h *Handler) getTrip(c *gin.Context) {
 		return
 	}
 
-	trip, err := h.services.Trip.GetById(tripId)
+	trip, err := h.services.Trip.GetById(int64(tripId))
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -130,7 +130,7 @@ func (h *Handler) deleteTrip(c *gin.Context) {
 		return
 	}
 
-	newAdminId, err := h.services.Trip.Delete(uctx.UserId, tripId)
+	newAdminId, err := h.services.Trip.Delete(uctx.UserId, int64(tripId))
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -170,7 +170,7 @@ func (h *Handler) getJoinedUsers(c *gin.Context) {
 		return
 	}
 
-	users, err := h.services.Trip.GetJoinedUsers(uctx.UserId, tripId)
+	users, err := h.services.Trip.GetJoinedUsers(uctx.UserId, int64(tripId))
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

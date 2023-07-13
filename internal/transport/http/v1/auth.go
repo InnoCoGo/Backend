@@ -76,7 +76,7 @@ func (h *Handler) signIn(c *gin.Context) {
 }
 
 type TgLoginInput struct {
-	Id        int    `json:"id"`
+	Id        int64  `json:"id"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Username  string `json:"username"`
@@ -95,7 +95,7 @@ type tgLoginWApp struct {
 }
 
 type tgLoginWSite struct {
-	Id        int    `json:"id" binding:"required"`
+	Id        int64  `json:"id" binding:"required"`
 	FirstName string `json:"first_name" binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
 	Username  string `json:"username" binding:"required"`
@@ -172,7 +172,7 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 			FirstName: userField["first_name"].(string),
 			LastName:  userField["last_name"].(string),
 			Username:  userField["username"].(string),
-			TgId:      userField["id"].(int),
+			TgId:      userField["id"].(int64),
 		}
 		keyword = webAppKeyword
 
@@ -211,7 +211,7 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 		}
 	}
 
-	token, err := h.services.Authorization.GenerateToken(core.UserCtx{UserId: userId, Username: user.Username})
+	token, err := h.services.Authorization.GenerateToken(core.UserCtx{UserId: userId, Username: user.Username, TgId: user.TgId})
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return

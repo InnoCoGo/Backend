@@ -33,18 +33,19 @@ const (
 
 type TokenClaims struct {
 	jwt.StandardClaims
-	UserId   int    `json:"user_id"`
+	UserId   int64  `json:"user_id"`
 	Username string `json:"username"`
+	UserTgId int64  `json:"user_tg_id"`
 }
 
-func (s *AuthService) CreateUser(user core.User) (int, error) {
+func (s *AuthService) CreateUser(user core.User) (int64, error) {
 	if user.PasswordOrHash != "" {
 		user.PasswordOrHash = generatePasswordHash(user.PasswordOrHash)
 	}
 	return s.repo.CreateUser(user)
 }
 
-func (s *AuthService) GetUserId(user core.User) (int, error) {
+func (s *AuthService) GetUserId(user core.User) (int64, error) {
 	if user.PasswordOrHash != "" {
 		user.PasswordOrHash = generatePasswordHash(user.PasswordOrHash)
 	}
@@ -59,6 +60,7 @@ func (s *AuthService) GenerateToken(uctx core.UserCtx) (string, error) {
 		},
 		UserId:   uctx.UserId,
 		Username: uctx.Username,
+		UserTgId: uctx.TgId,
 	})
 
 	return token.SignedString([]byte(signInKey))

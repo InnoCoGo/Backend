@@ -43,7 +43,7 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	var redirectReq = joinRequest{
+	var redirectReq = InputGetResFromBot{
 		AdminTgId:   trip.AdminTgId,
 		UserId:      uctx.UserId,
 		UserTgId:    uctx.TgId,
@@ -62,7 +62,7 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 }
 
 func (h *Handler) getResFromBot(c *gin.Context) { // TODO: webhook
-	var input joinRequest
+	var input InputGetResFromBot
 	if err := c.BindJSON(&input); err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -83,13 +83,13 @@ func (h *Handler) getResFromBot(c *gin.Context) { // TODO: webhook
 	c.JSON(http.StatusOK, map[string]interface{}{"status": "ok"})
 }
 
-type joinRequest struct {
+type InputGetResFromBot struct {
 	TripId      int64  `json:"trip_id" binding:"required"`
 	AdminTgId   int64  `json:"trip_admin_tg_id"`
 	UserId      int64  `json:"id_of_person_asking_to_join" binding:"required"`
-	UserTgId    int64  `json:"tg_id_of_person_asking_to_join" binding:"required"`
+	UserTgId    int64  `json:"tg_id_of_person_asking_to_join"`
 	SecretToken string `json:"secret_token" binding:"required"`
-	Accepted    bool   `json:"accepted"`
+	Accepted    bool   `json:"accepted" binding:"required"`
 	TripName    string `json:"trip_name"`
 }
 

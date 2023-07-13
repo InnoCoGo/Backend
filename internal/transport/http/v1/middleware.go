@@ -52,18 +52,15 @@ func (h *Handler) userIdentity(c *gin.Context) {
 
 func getUserCtx(c *gin.Context) (core.UserCtx, error) {
 	id, ok := c.Get(userIdCtx)
-
 	if !ok {
 		return core.UserCtx{}, fmt.Errorf("user id not found")
 	}
-
-	idInt, ok := id.(int)
+	idInt, ok := id.(int64)
 	if !ok {
 		return core.UserCtx{}, fmt.Errorf("user id is of invalid type")
 	}
 
 	username, ok := c.Get(usernameCtx)
-
 	if !ok {
 		return core.UserCtx{}, fmt.Errorf("(tg)username not found")
 	}
@@ -72,7 +69,16 @@ func getUserCtx(c *gin.Context) (core.UserCtx, error) {
 		return core.UserCtx{}, fmt.Errorf("(tg)username is of invalid type")
 	}
 
-	log.Printf("\n%v && %v\n", idInt, usernameStr)
+	tgId, ok := c.Get(userIdCtx)
+	if !ok {
+		return core.UserCtx{}, fmt.Errorf("user id not found")
+	}
+	tgIdInt, ok := tgId.(int64)
+	if !ok {
+		return core.UserCtx{}, fmt.Errorf("user id is of invalid type")
+	}
 
-	return core.UserCtx{UserId: idInt, Username: usernameStr}, nil
+	log.Printf("\n%v && %v && %v\n", idInt, usernameStr, tgIdInt)
+
+	return core.UserCtx{UserId: idInt, Username: usernameStr, TgId: tgIdInt}, nil
 }

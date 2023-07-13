@@ -6,23 +6,23 @@ import (
 )
 
 type Authorization interface {
-	CreateUser(user core.User) (int, error)
-	GetUserId(user core.User) (int, error)
+	CreateUser(user core.User) (int64, error)
+	GetUserId(user core.User) (int64, error)
 	// LoginTg(core.User) (string, error)
 }
 type User interface {
-	GetUserInfo(id int) (core.User, error)
-	JoinTrip(userId, tripId int) error
+	GetUserInfo(id int64) (core.User, error)
+	JoinTrip(userId, tripId int64) error
 }
 
 type Trip interface {
-	Create(trip core.Trip) (int, error)
-	GetById(tripId int) (core.Trip, error)
-	Delete(userId, tripId int) (int, error)
+	Create(trip core.Trip) (int64, error)
+	GetById(tripId int64) (core.Trip, error)
+	Delete(userId, tripId int64) (int64, error)
 	// Update(trip core.Trip) error
 	GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error)
-	GetJoinedTrips(userId int) ([]core.Trip, error)
-	GetJoinedUsers(userId, tripId int) ([]core.UserCtx, error)
+	GetJoinedTrips(userId int64) ([]core.Trip, error)
+	GetJoinedUsers(userId, tripId int64) ([]core.UserCtx, error)
 }
 
 type Repository struct {

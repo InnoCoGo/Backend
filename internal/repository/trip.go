@@ -17,16 +17,16 @@ func NewTripPostgres(db *sqlx.DB) *TripPostgres {
 	return &TripPostgres{db: db}
 }
 
-func (r *TripPostgres) Create(trip core.Trip) (int, error) {
+func (r *TripPostgres) Create(trip core.Trip) (int64, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return 0, err
 	}
 
-	var id int
-	createTripQuery := fmt.Sprintf(`INSERT INTO %s (admin_id, admin_username, is_driver, places_max, places_taken, chosen_timestamp, from_point, to_point, description)
+	var id int64
+	createTripQuery := fmt.Sprintf(`INSERT INTO %s (admin_id, admin_username, admin_tg_id, is_driver, places_max, places_taken, chosen_timestamp, from_point, to_point, description)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`, tripsTable)
-	row := tx.QueryRow(createTripQuery, trip.AdminId, trip.AdminUsername, trip.IsDriver, trip.PlacesMax, trip.PlacesTaken, trip.ChosenTimestamp, trip.FromPoint, trip.ToPoint, trip.Description)
+	row := tx.QueryRow(createTripQuery, trip.AdminId, trip.AdminUsername, trip.AdminTgId, trip.IsDriver, trip.PlacesMax, trip.PlacesTaken, trip.ChosenTimestamp, trip.FromPoint, trip.ToPoint, trip.Description)
 	if err := row.Scan(&id); err != nil {
 		tx.Rollback()
 		return 0, err
@@ -43,14 +43,14 @@ func (r *TripPostgres) Create(trip core.Trip) (int, error) {
 	return id, tx.Commit()
 }
 
-func (r *TripPostgres) GetById(tripId int) (core.Trip, error) {
+func (r *TripPostgres) GetById(tripId int64) (core.Trip, error) {
 	var trip core.Trip
 	query := fmt.Sprintf(`SELECT * FROM %s t WHERE t.id=$1`, tripsTable)
 	err := r.db.Get(&trip, query, tripId)
 	return trip, err
 }
 
-func (r *TripPostgres) Delete(userId, tripId int) (int, error) {
+func (r *TripPostgres) Delete(userId, tripId int64) (int64, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return 0, err
@@ -63,7 +63,7 @@ func (r *TripPostgres) Delete(userId, tripId int) (int, error) {
 		return 0, err
 	}
 
-	var newAdminId int
+	var newAdminId int64
 	nextAdminQuery := fmt.Sprintf(`SELECT ut.user_id FROM %s ut WHERE ut.trip_id=$1`, usersTripsTable)
 	row := tx.QueryRow(nextAdminQuery, tripId)
 
@@ -121,7 +121,7 @@ func (r *TripPostgres) GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error
 	return trips, err
 }
 
-func (r *TripPostgres) GetJoinedTrips(userId int) ([]core.Trip, error) {
+func (r *TripPostgres) GetJoinedTrips(userId int64) ([]core.Trip, error) {
 	var dest []core.Trip
 	query := fmt.Sprintf(`SELECT t.*
 						FROM 
@@ -134,7 +134,7 @@ func (r *TripPostgres) GetJoinedTrips(userId int) ([]core.Trip, error) {
 	return dest, err
 }
 
-func (r *TripPostgres) GetJoinedUsers(userId, tripId int) ([]core.UserCtx, error) {
+func (r *TripPostgres) GetJoinedUsers(userId, tripId int64) ([]core.UserCtx, error) {
 	var dest []core.UserCtx
 	query := fmt.Sprintf(`SELECT u.id, u.username
 						FROM 

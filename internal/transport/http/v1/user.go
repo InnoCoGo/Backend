@@ -2,6 +2,7 @@ package v1
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -37,15 +38,15 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 		return
 	}
 
-	trip, err := h.services.Trip.GetById(trip_id)
+	trip, err := h.services.Trip.GetById(int64(trip_id))
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	var redirectReq = joinRequest{
-		UserId:      uctx.UserId,
-		AdminId:     trip.AdminId,
-		TripId:      trip_id,
+		UserId:      uctx.TgId,
+		AdminId:     trip.AdminTgId,
+		TripId:      int64(trip_id),
 		SecretToken: os.Getenv("BACKEND_SECRET_TOKEN"),
 		TripName:    getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp),
 	}
@@ -82,9 +83,9 @@ func (h *Handler) getResFromBot(c *gin.Context) { // TODO: webhook
 }
 
 type joinRequest struct {
-	AdminId     int    `json:"trip_admin_id"`
-	TripId      int    `json:"trip_id" binding:"required"`
-	UserId      int    `json:"id_of_person_asking_to_join" binding:"required"`
+	AdminId     int64  `json:"trip_admin_id"`
+	TripId      int64  `json:"trip_id" binding:"required"`
+	UserId      int64  `json:"id_of_person_asking_to_join" binding:"required"`
 	SecretToken string `json:"secret_token" binding:"required"`
 	Accepted    bool   `json:"accepted"`
 	TripName    string `json:"trip_name"`
@@ -92,7 +93,7 @@ type joinRequest struct {
 
 func doRequest(methd, host, p string, bodyStruct interface{}) error {
 	u := url.URL{
-		Scheme: "http",
+		Scheme: "https",
 		Host:   host,
 		Path:   p,
 	}
@@ -102,15 +103,21 @@ func doRequest(methd, host, p string, bodyStruct interface{}) error {
 		return err
 	}
 
-	httpCl := http.Client{}
 	req, err := http.NewRequest(methd, u.String(), bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	res, err := httpCl.Do(req)
+	httpCl := http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
 
+	res, err := httpCl.Do(req)
 	defer func() {
 		if res != nil {
 			_ = res.Body.Close()

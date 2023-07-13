@@ -48,13 +48,13 @@ func (h *Handler) joinTrip(c *gin.Context) {
 		Conn:     conn,
 		Message:  make(chan *server.Message, 10),
 		Id:       uctx.UserId,
-		RoomId:   tripId,
+		RoomId:   int64(tripId),
 		Username: uctx.Username,
 	}
 
 	m := &server.Message{
 		Content:  fmt.Sprintf(`%s has joined the trip`, uctx.Username),
-		RoomId:   tripId,
+		RoomId:   int64(tripId),
 		Username: uctx.Username,
 	}
 

@@ -15,11 +15,11 @@ import (
 )
 
 func (h *Handler) initUsersRoutes(api *gin.RouterGroup) {
-	user := api.Group("/user", h.userIdentity)
+	user := api.Group("/user")
 	{
 		jt := user.Group("/join_trip")
 		{
-			jt.POST("/req/:trip_id", h.redirectReqToBot)
+			jt.POST("/req/:trip_id", h.userIdentity, h.redirectReqToBot)
 			jt.POST("/res", h.getResFromBot)
 		}
 	}

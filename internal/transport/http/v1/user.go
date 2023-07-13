@@ -44,8 +44,9 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 		return
 	}
 	var redirectReq = joinRequest{
-		UserId:      uctx.TgId,
-		AdminId:     trip.AdminTgId,
+		AdminTgId:   trip.AdminTgId,
+		UserId:      uctx.UserId,
+		UserTgId:    uctx.TgId,
 		TripId:      int64(trip_id),
 		SecretToken: os.Getenv("BACKEND_SECRET_TOKEN"),
 		TripName:    getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp),
@@ -83,9 +84,10 @@ func (h *Handler) getResFromBot(c *gin.Context) { // TODO: webhook
 }
 
 type joinRequest struct {
-	AdminId     int64  `json:"trip_admin_id"`
 	TripId      int64  `json:"trip_id" binding:"required"`
+	AdminTgId   int64  `json:"trip_admin_tg_id"`
 	UserId      int64  `json:"id_of_person_asking_to_join" binding:"required"`
+	UserTgId    int64  `json:"tg_id_of_person_asking_to_join" binding:"required"`
 	SecretToken string `json:"secret_token" binding:"required"`
 	Accepted    bool   `json:"accepted"`
 	TripName    string `json:"trip_name"`

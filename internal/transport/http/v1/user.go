@@ -2,6 +2,7 @@ package v1
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -92,7 +93,7 @@ type joinRequest struct {
 
 func doRequest(methd, host, p string, bodyStruct interface{}) error {
 	u := url.URL{
-		Scheme: "http",
+		Scheme: "https",
 		Host:   host,
 		Path:   p,
 	}
@@ -102,15 +103,21 @@ func doRequest(methd, host, p string, bodyStruct interface{}) error {
 		return err
 	}
 
-	httpCl := http.Client{}
 	req, err := http.NewRequest(methd, u.String(), bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	res, err := httpCl.Do(req)
+	httpCl := http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
 
+	res, err := httpCl.Do(req)
 	defer func() {
 		if res != nil {
 			_ = res.Body.Close()

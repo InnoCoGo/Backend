@@ -17,6 +17,7 @@ var BotToken = os.Getenv("BOT_TOKEN")
 const (
 	AuthorizationHeader = "Authorization"
 	userIdCtx           = "userId"
+	userTgIdCtx         = "userId"
 	usernameCtx         = "username"
 	webappKeyword       = "WebAppData"
 )
@@ -47,6 +48,7 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	}
 
 	c.Set(userIdCtx, uctx.UserId)
+	c.Set(userTgIdCtx, uctx.TgId)
 	c.Set(usernameCtx, uctx.Username)
 }
 
@@ -69,7 +71,7 @@ func getUserCtx(c *gin.Context) (core.UserCtx, error) {
 		return core.UserCtx{}, fmt.Errorf("(tg)username is of invalid type")
 	}
 
-	tgId, ok := c.Get(userIdCtx)
+	tgId, ok := c.Get(userTgIdCtx)
 	if !ok {
 		return core.UserCtx{}, fmt.Errorf("user id not found")
 	}

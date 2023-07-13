@@ -1,7 +1,7 @@
 package core
 
 type Trip struct {
-	TripId          int64  `json:"-" db:"id"`
+	TripId          int64  `json:"id" db:"id"`
 	AdminId         int64  `json:"admin_id" db:"admin_id"`
 	AdminUsername   string `json:"admin_username" db:"admin_username"`
 	AdminTgId       int64  `json:"admin_tg_id" db:"admin_tg_id"`

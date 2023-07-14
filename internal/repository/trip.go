@@ -86,9 +86,8 @@ func (r *TripPostgres) Delete(userId, tripId int64) (int64, error) {
 		adminId = newAdminId
 		adminUsername = newAdminUsername
 		adminTgId = newAdminTgId
-	} else {
-		placesTaken--
 	}
+	placesTaken--
 
 	setValues := `admin_id=$1, admin_username=$2, admin_tg_id=$3, places_taken=$4`
 	deleteTripQuery := fmt.Sprintf(`UPDATE %s SET %s WHERE id=$5`, tripsTable, setValues)

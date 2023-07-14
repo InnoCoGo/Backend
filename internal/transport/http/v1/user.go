@@ -19,7 +19,7 @@ func (h *Handler) initUsersRoutes(api *gin.RouterGroup) {
 	{
 		jt := user.Group("/join_trip")
 		{
-			jt.POST("/req/:trip_id", h.userIdentity, h.redirectReqToBot)
+			jt.GET("/req/:trip_id", h.userIdentity, h.redirectReqToBot)
 			jt.POST("/res", h.getResFromBot)
 		}
 	}

@@ -4,21 +4,16 @@ import (
 	"log"
 
 	"github.com/gorilla/websocket"
+	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 	"github.com/sirupsen/logrus"
 )
 
 type Client struct {
 	Conn     *websocket.Conn
-	Message  chan *Message
+	Message  chan *protocol.Message
 	Id       int64  `json:"client_id"`
 	Username string `json:"username"`
 	RoomId   int64  `json:"room_id"`
-}
-
-type Message struct {
-	Content  string `json:"content"`
-	RoomId   int64  `json:"room_id"`
-	Username string `json:"username"`
 }
 
 func (c *Client) WriteMessage() {
@@ -47,10 +42,11 @@ func (c *Client) ReadMessage(hub *Hub) {
 			break
 		}
 
-		msg := &Message{
-			Content:  string(msgPack),
-			RoomId:   c.RoomId,
-			Username: c.Username,
+		msg := &protocol.Message{
+			Content:      string(msgPack),
+			FromUsername: c.Username,
+			FromId:       c.Id,
+			ToRoomId:     c.RoomId,
 		}
 
 		log.Print(msg)

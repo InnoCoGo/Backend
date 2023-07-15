@@ -1,5 +1,7 @@
 package server
 
+import "github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
+
 type Room struct {
 	Id      int64             `json:"room_id"`
 	Name    string            `json:"room_name"`
@@ -10,7 +12,7 @@ type Hub struct {
 	Rooms      map[int64]*Room
 	Register   chan *Client
 	Unregister chan *Client
-	Broadcast  chan *Message
+	Broadcast  chan *protocol.Message
 }
 
 func NewHub() *Hub {
@@ -18,11 +20,11 @@ func NewHub() *Hub {
 		Rooms:      make(map[int64]*Room),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
-		Broadcast:  make(chan *Message, 5),
+		Broadcast:  make(chan *protocol.Message, 5),
 	}
 }
 
-func (hub *Hub) ConsumerKafkaMsg(msg *Message) {
+func (hub *Hub) ConsumerKafkaMsg(msg *protocol.Message) {
 	hub.Broadcast <- msg
 }
 
@@ -42,10 +44,11 @@ func (h *Hub) Run() {
 				clients := h.Rooms[cl.RoomId].Clients
 				if _, ok := clients[cl.Id]; ok {
 					if len(clients) != 0 {
-						h.Broadcast <- &Message{
-							Content:  "user left the chat",
-							RoomId:   cl.RoomId,
-							Username: cl.Username,
+						h.Broadcast <- &protocol.Message{
+							Content:      "User " + cl.Username + " has left the chat",
+							FromUsername: "System",
+							FromId:       0,
+							ToRoomId:     cl.RoomId,
 						}
 					}
 					delete(h.Rooms[cl.RoomId].Clients, cl.Id)
@@ -53,8 +56,8 @@ func (h *Hub) Run() {
 				}
 			}
 		case m := <-h.Broadcast:
-			if _, ok := h.Rooms[m.RoomId]; ok {
-				for _, cl := range h.Rooms[m.RoomId].Clients {
+			if _, ok := h.Rooms[m.ToRoomId]; ok {
+				for _, cl := range h.Rooms[m.ToRoomId].Clients {
 					cl.Message <- m
 				}
 			}

@@ -1,13 +1,13 @@
 package v1
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
+	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 	"github.com/itoqsky/InnoCoTravel-backend/pkg/response"
 )
 
@@ -46,16 +46,17 @@ func (h *Handler) joinTrip(c *gin.Context) {
 
 	cl := &server.Client{
 		Conn:     conn,
-		Message:  make(chan *server.Message, 10),
+		Message:  make(chan *protocol.Message, 10),
 		Id:       uctx.UserId,
 		RoomId:   int64(tripId),
 		Username: uctx.Username,
 	}
 
-	m := &server.Message{
-		Content:  fmt.Sprintf(`%s has joined the trip`, uctx.Username),
-		RoomId:   int64(tripId),
-		Username: uctx.Username,
+	m := &protocol.Message{
+		FromUsername: uctx.Username,
+		FromId:       uctx.UserId,
+		ToRoomId:     int64(tripId),
+		Content:      uctx.Username + " joined the room",
 	}
 
 	h.hub.Register <- cl

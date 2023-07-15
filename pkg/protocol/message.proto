@@ -5,8 +5,8 @@ package protocol;
 message Message {
     string avatar = 1;
     string fromUsername = 2;
-    int32 from = 3; // user id
-    int32 to = 4; // group id
+    int64 fromId = 3; // user id
+    int64 toRoomId = 4; // room id
     string content = 5;
     int32 contentType = 6; // 0: text, 1: image, 2: file, 3: audio
     int32 transmissionType = 7; // 0: heartbeat, 1: normal

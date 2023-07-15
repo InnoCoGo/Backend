@@ -160,7 +160,7 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 					response.NewErrorResponse(c, http.StatusBadRequest, "incorrect value of id in user field from telegram webapp")
 					return
 				}
-				userField[k] = int(v.(float64))
+				userField[k] = int64(v.(float64))
 			} else {
 				if _, ok := v.(string); !ok {
 					response.NewErrorResponse(c, http.StatusBadRequest, "incorrect assertion string in user field from telegram webapp")

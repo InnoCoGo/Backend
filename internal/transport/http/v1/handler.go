@@ -22,5 +22,6 @@ func (h *Handler) InitV1(api *gin.RouterGroup) {
 		h.initUsersRoutes(v1)
 		h.initWsRoutes(v1)
 		h.initTripsRoutes(v1)
+		// h.initMessagesRoutes(v1)
 	}
 }

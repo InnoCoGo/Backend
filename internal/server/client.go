@@ -4,8 +4,10 @@ import (
 	"log"
 
 	"github.com/gorilla/websocket"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/kafka"
 	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type Client struct {
@@ -48,8 +50,12 @@ func (c *Client) ReadMessage(hub *Hub) {
 			FromId:       c.Id,
 			ToRoomId:     c.RoomId,
 		}
-
 		log.Print(msg)
-		hub.Broadcast <- msg
+
+		if viper.GetBool("kafka.enabled") {
+			kafka.Produce(msgPack)
+		} else {
+			hub.Broadcast <- msg
+		}
 	}
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
+	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -25,10 +26,15 @@ type Trip interface {
 	GetJoinedUsers(userId, tripId int64) ([]core.UserCtx, error)
 }
 
+type Message interface {
+	Save(message protocol.Message) (int64, error)
+}
+
 type Repository struct {
 	Authorization
 	User
 	Trip
+	Message
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
@@ -36,5 +42,6 @@ func NewRepository(db *sqlx.DB) *Repository {
 		Authorization: NewAuthPostgres(db),
 		User:          NewUserPostgres(db),
 		Trip:          NewTripPostgres(db),
+		Message:       NewMessagePostgres(db),
 	}
 }

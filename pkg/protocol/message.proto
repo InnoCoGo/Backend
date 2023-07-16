@@ -11,7 +11,6 @@ message Message {
     int32 contentType = 6; // 0: text, 1: image, 2: file, 3: audio
     int32 transmissionType = 7; // 0: heartbeat, 1: normal
     int32 status = 8; // 0: sending, 1: sent, 2: received, 3: read
-    int32 time = 9;
-    string url = 10; // image, file, audio url
-    bytes fileData = 11; // image, file, audio data
+    string url = 9; // image, file, audio url
+    bytes fileData = 10; // image, file, audio data
 }

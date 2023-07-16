@@ -11,5 +11,8 @@ db:
   dbname: "postgres"
   sslmode: "disable"
 
-chat:
-  channelType: "kafka"
+kafka:
+  enabled: true
+  brokers:
+    - "localhost:9092"
+  topic: "chat"

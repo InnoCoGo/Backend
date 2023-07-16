@@ -13,7 +13,7 @@ services:
         - 9092:9092
     environment:
         KAFKA_BROKER_ID: 0
-        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.56.1:9092 # bridge ip
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.56.1:9092 # bridge ip to vm container
         KAFKA_CREATE_TOPICS: "go-chat-message:2:0"   #  topic:partitions:replicas
         KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
         KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092

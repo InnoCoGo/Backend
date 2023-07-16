@@ -10,3 +10,6 @@ db:
   username: "postgres"
   dbname: "postgres"
   sslmode: "disable"
+
+chat:
+  channelType: "kafka"

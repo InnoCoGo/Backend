@@ -1,6 +1,10 @@
 package server
 
-import "github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
+import (
+	"strconv"
+
+	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
+)
 
 type Room struct {
 	Id      int64             `json:"room_id"`
@@ -45,7 +49,7 @@ func (h *Hub) Run() {
 				if _, ok := clients[cl.Id]; ok {
 					if len(clients) != 0 {
 						h.Broadcast <- &protocol.Message{
-							Content:      "User " + cl.Username + " has left the chat",
+							Content:      "User " + cl.Username + " has left the room" + strconv.Itoa(int(cl.RoomId)),
 							FromUsername: "System",
 							FromId:       0,
 							ToRoomId:     cl.RoomId,

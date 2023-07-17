@@ -48,3 +48,18 @@ create table comments(
     foreign key(from_id) references users(id),
     foreign key(to_id) references users(id)
 );
+
+create table messages(
+    id serial primary key,
+    user_id bigint not null,
+    room_id bigint not null,
+
+    content varchar(256) not null,
+    content_type int not null,
+    url varchar(256),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    foreign key(user_id) references users(id),
+    foreign key(room_id) references users(id),
+
+);

@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) initMessagesRoutes(api *gin.RouterGroup) {
-	messages := api.Group("/messages")
+	messages := api.Group("/messages", h.userIdentity)
 	{
 		messages.GET("/:room_id", h.fetchRoomMessages)
 	}

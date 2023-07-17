@@ -45,25 +45,26 @@ func (h *Handler) createTrip(c *gin.Context) {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+	if len(trip.Description) > 0 {
+		langId := identifyLang(trip.Description)
+		translater := tr.New(tr.Config{
+			Url: os.Getenv("TRANSLATE_URL"),
+			Key: os.Getenv("TRANSLATE_API_KEY"),
+		})
+		translated, err := translater.Translate(trip.Description, getLang(langId), getLang(!langId))
+		if err != nil {
+			response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	langId := identifyLang(trip.Description)
-	translater := tr.New(tr.Config{
-		Url: os.Getenv("TRANSLATE_URL"),
-		Key: os.Getenv("TRANSLATE_API_KEY"),
-	})
-	translated, err := translater.Translate(trip.Description, getLang(langId), getLang(!langId))
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
+		trip.AdminId = uctx.UserId
+		trip.AdminUsername = uctx.Username
+		trip.AdminTgId = uctx.TgId
 
-	trip.AdminId = uctx.UserId
-	trip.AdminUsername = uctx.Username
-	trip.AdminTgId = uctx.TgId
-
-	trip.TranslatedDesc = translated
-	if langId {
-		trip.Description, trip.TranslatedDesc = trip.TranslatedDesc, trip.Description
+		trip.TranslatedDesc = translated
+		if langId {
+			trip.Description, trip.TranslatedDesc = trip.TranslatedDesc, trip.Description
+		}
 	}
 
 	tripId, err := h.services.Trip.Create(trip)

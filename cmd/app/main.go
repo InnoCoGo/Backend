@@ -10,7 +10,6 @@ import (
 	"syscall"
 
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
-	"github.com/itoqsky/InnoCoTravel-backend/internal/kafka"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/repository"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
@@ -53,9 +52,9 @@ func main() {
 	hub := server.NewHub()
 	go hub.Run()
 
-	kafka.InitProducer(os.Getenv("KAFKA_TOPIC"), os.Getenv("KAFKA_HOSTS"))
-	kafka.InitConsumer(os.Getenv("KAFKA_HOSTS"))
-	go kafka.Consume(hub.ConsumerKafkaMsg)
+	// kafka.InitProducer(os.Getenv("KAFKA_TOPIC"), os.Getenv("KAFKA_HOSTS"))
+	// kafka.InitConsumer(os.Getenv("KAFKA_HOSTS"))
+	// go kafka.Consume(hub.ConsumerKafkaMsg)
 
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos)

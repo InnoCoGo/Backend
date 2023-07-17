@@ -3,6 +3,7 @@ package v1
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,7 @@ import (
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel-backend/pkg/response"
+	tr "github.com/snakesel/libretranslate"
 )
 
 func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
@@ -44,9 +46,25 @@ func (h *Handler) createTrip(c *gin.Context) {
 		return
 	}
 
+	langId := identifyLang(trip.Description)
+	translater := tr.New(tr.Config{
+		Url: os.Getenv("TRANSLATE_URL"),
+		Key: os.Getenv("TRANSLATE_API_KEY"),
+	})
+	translated, err := translater.Translate(trip.Description, getLang(langId), getLang(!langId))
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	trip.AdminId = uctx.UserId
 	trip.AdminUsername = uctx.Username
 	trip.AdminTgId = uctx.TgId
+
+	trip.TranslatedDesc = translated
+	if langId {
+		trip.Description, trip.TranslatedDesc = trip.TranslatedDesc, trip.Description
+	}
 
 	tripId, err := h.services.Trip.Create(trip)
 	if err != nil {
@@ -67,6 +85,24 @@ func (h *Handler) createTrip(c *gin.Context) {
 
 func getTripName(from, to int, timestamp string) string {
 	return fmt.Sprintf("%d -> %d at: %s", from, to, timestamp)
+}
+
+func identifyLang(text string) bool {
+	for _, r := range text {
+		if r > 127 {
+			return false
+		} else if 'a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' {
+			return true
+		}
+	}
+	return true
+}
+
+func getLang(langId bool) string {
+	if langId {
+		return "en"
+	}
+	return "ru"
 }
 
 func (h *Handler) getJoinedTrips(c *gin.Context) {

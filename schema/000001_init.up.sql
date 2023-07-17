@@ -28,7 +28,8 @@ create table trips(
 	from_point          int             not null,
 	to_point            int             not null,
 
-	description         varchar(256)
+	description         varchar(256),
+    translated_desc     varchar(256)
 );
 
 create table users_trips(
@@ -60,6 +61,6 @@ create table messages(
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
     foreign key(user_id) references users(id),
-    foreign key(room_id) references users(id),
+    foreign key(room_id) references users(id)
 
 );

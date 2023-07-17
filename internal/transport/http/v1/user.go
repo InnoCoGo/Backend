@@ -52,7 +52,7 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 		TripName:    getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp),
 	}
 
-	err = doRequest(http.MethodPost, os.Getenv("TG_BOT_URL"), path.Join("/", "join_request"), redirectReq)
+	err = doRequest(http.MethodPost, os.Getenv("TG_BOT_URL"), path.Join("/", "join_request"), redirectReq, true)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -93,9 +93,13 @@ type InputGetResFromBot struct {
 	TripName    string `json:"trip_name"`
 }
 
-func doRequest(methd, host, p string, bodyStruct interface{}) error {
+func doRequest(methd, host, p string, bodyStruct interface{}, secure bool) error {
+	s := "http"
+	if secure {
+		s = "https"
+	}
 	u := url.URL{
-		Scheme: "https",
+		Scheme: s,
 		Host:   host,
 		Path:   p,
 	}
@@ -111,12 +115,16 @@ func doRequest(methd, host, p string, bodyStruct interface{}) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	httpCl := http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+	httpCl := http.Client{}
+
+	if secure {
+		httpCl = http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
 			},
-		},
+		}
 	}
 
 	res, err := httpCl.Do(req)

@@ -25,10 +25,6 @@ func (s *TripService) Delete(userId, tripId int64) (int64, error) {
 	return s.repo.Delete(userId, tripId)
 }
 
-// func (s *TripService) Update(trip core.Trip) error {
-// 	return s.repo.Update(trip)
-// }
-
 func (s *TripService) GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error) {
 	return s.repo.GetAdjTrips(input)
 }

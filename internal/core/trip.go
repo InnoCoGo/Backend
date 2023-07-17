@@ -12,6 +12,7 @@ type Trip struct {
 	FromPoint       int    `json:"from_point" db:"from_point" biding:"required"`
 	ToPoint         int    `json:"to_point" db:"to_point" biding:"required"`
 	Description     string `json:"description" db:"description"`
+	TranslatedDesc  string `json:"translated_desc" db:"translated_desc"`
 }
 
 type InputAdjTrips struct {

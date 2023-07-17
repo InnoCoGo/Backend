@@ -45,6 +45,11 @@ func (h *Handler) createTrip(c *gin.Context) {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	trip.AdminId = uctx.UserId
+	trip.AdminUsername = uctx.Username
+	trip.AdminTgId = uctx.TgId
+
 	if len(trip.Description) > 0 {
 		langId := identifyLang(trip.Description)
 		translater := tr.New(tr.Config{
@@ -56,10 +61,6 @@ func (h *Handler) createTrip(c *gin.Context) {
 			response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 			return
 		}
-
-		trip.AdminId = uctx.UserId
-		trip.AdminUsername = uctx.Username
-		trip.AdminTgId = uctx.TgId
 
 		trip.TranslatedDesc = translated
 		if langId {

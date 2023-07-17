@@ -3,7 +3,6 @@ package v1
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +10,6 @@ import (
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel-backend/pkg/response"
-	tr "github.com/snakesel/libretranslate"
 )
 
 func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
@@ -47,15 +45,16 @@ func (h *Handler) createTrip(c *gin.Context) {
 	}
 
 	langId := identifyLang(trip.Description)
-	translater := tr.New(tr.Config{
-		Url: os.Getenv("TRANSLATE_URL"),
-		Key: os.Getenv("TRANSLATE_API_KEY"),
-	})
-	translated, err := translater.Translate(trip.Description, getLang(langId), getLang(!langId))
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
+	// translater := tr.New(tr.Config{
+	// 	Url: os.Getenv("TRANSLATE_URL"),
+	// 	Key: os.Getenv("TRANSLATE_API_KEY"),
+	// })
+	// translated, err := translater.Translate(trip.Description, getLang(langId), getLang(!langId))
+	// if err != nil {
+	// 	response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+	// 	return
+	// }
+	translated := ""
 
 	trip.AdminId = uctx.UserId
 	trip.AdminUsername = uctx.Username

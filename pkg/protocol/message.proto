@@ -4,7 +4,7 @@ package protocol;
 
 message Message {
     string fromUsername = 1;
-    int64 fromId = 2; // user id
+    int64 fromUserId = 2; // user id
     int64 toRoomId = 3; // room id
     string content = 4;
     int32 contentType = 5; // 0: text, 1: image, 2: file, 3: audio

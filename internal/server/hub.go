@@ -3,6 +3,7 @@ package server
 import (
 	"strconv"
 
+	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
 	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 )
 
@@ -32,7 +33,7 @@ func (hub *Hub) ConsumerKafkaMsg(msg *protocol.Message) {
 	hub.Broadcast <- msg
 }
 
-func (h *Hub) Run() {
+func (h *Hub) Run(s *service.Service) {
 	for {
 		select {
 		case cl := <-h.Register:
@@ -51,7 +52,7 @@ func (h *Hub) Run() {
 						h.Broadcast <- &protocol.Message{
 							Content:      "User " + cl.Username + " has left the room" + strconv.Itoa(int(cl.RoomId)),
 							FromUsername: "System",
-							FromId:       0,
+							FromUserId:   0,
 							ToRoomId:     cl.RoomId,
 						}
 					}
@@ -61,6 +62,10 @@ func (h *Hub) Run() {
 			}
 		case m := <-h.Broadcast:
 			if _, ok := h.Rooms[m.ToRoomId]; ok {
+				_, exits := h.Rooms[m.FromUserId]
+				if exits && m.FromUserId != 0 {
+					s.Message.Save(*m)
+				}
 				for _, cl := range h.Rooms[m.ToRoomId].Clients {
 					cl.Message <- m
 				}

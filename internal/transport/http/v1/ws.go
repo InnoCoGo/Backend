@@ -54,7 +54,7 @@ func (h *Handler) joinTrip(c *gin.Context) {
 
 	m := &protocol.Message{
 		FromUsername: uctx.Username,
-		FromId:       uctx.UserId,
+		FromUserId:   uctx.UserId,
 		ToRoomId:     int64(tripId),
 		Content:      uctx.Username + " joined the room",
 	}

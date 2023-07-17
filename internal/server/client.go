@@ -47,7 +47,7 @@ func (c *Client) ReadMessage(hub *Hub) {
 		msg := &protocol.Message{
 			Content:      string(msgPack),
 			FromUsername: c.Username,
-			FromId:       c.Id,
+			FromUserId:   c.Id,
 			ToRoomId:     c.RoomId,
 		}
 		log.Print(msg)

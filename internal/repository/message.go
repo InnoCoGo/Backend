@@ -23,7 +23,7 @@ func (r *MessagePostgres) Save(message protocol.Message) (int64, error) {
 	($1, $2, $3, $4, $5) RETURNING id`, messagesTable)
 
 	msg := core.Message{
-		FromUserId:  message.FromId,
+		FromUserId:  message.FromUserId,
 		ToRoomId:    message.ToRoomId,
 		Content:     message.Content,
 		ContentType: int8(message.ContentType),

@@ -9,7 +9,6 @@ type User struct {
 	Rating         int    `json:"rating" db:"rating"`
 	NumPeopleRated int    `json:"num_people_rated" db:"num_people_rated"`
 	TgId           int64  `json:"tg_id" db:"tg_id"`
-	PhotoUrl       string `json:"photo_url" db:"photo_url"`
 }
 
 type UserCtx struct {

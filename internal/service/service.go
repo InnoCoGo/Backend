@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/repository"
+	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 )
 
 type Authorization interface {
@@ -33,10 +34,16 @@ type Trip interface {
 	GetJoinedUsers(userId, tripId int64) ([]core.UserCtx, error)
 }
 
+type Message interface {
+	Save(message protocol.Message) (int64, error)
+	FetchRoomMessages(roomId int64) ([]core.Message, error)
+}
+
 type Service struct {
 	Authorization
 	User
 	Trip
+	Message
 }
 
 func NewService(repo *repository.Repository) *Service {
@@ -44,5 +51,6 @@ func NewService(repo *repository.Repository) *Service {
 		Authorization: NewAuthService(repo.Authorization),
 		User:          NewUserService(repo.User),
 		Trip:          NewTripService(repo.Trip),
+		Message:       NewMessageService(repo.Message),
 	}
 }

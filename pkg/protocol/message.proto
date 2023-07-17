@@ -3,14 +3,13 @@ syntax = "proto3";
 package protocol;
 
 message Message {
-    string avatar = 1;
-    string fromUsername = 2;
-    int64 fromId = 3; // user id
-    int64 toRoomId = 4; // room id
-    string content = 5;
-    int32 contentType = 6; // 0: text, 1: image, 2: file, 3: audio
-    int32 transmissionType = 7; // 0: heartbeat, 1: normal
-    int32 status = 8; // 0: sending, 1: sent, 2: received, 3: read
-    string url = 9; // image, file, audio url
-    bytes fileData = 10; // image, file, audio data
+    string fromUsername = 1;
+    int64 fromId = 2; // user id
+    int64 toRoomId = 3; // room id
+    string content = 4;
+    int32 contentType = 5; // 0: text, 1: image, 2: file, 3: audio
+    int32 transmissionType = 6; // 0: heartbeat, 1: normal
+    int32 status = 7; // 0: sending, 1: sent, 2: received, 3: read
+    string url = 8; // image, file, audio url
+    bytes fileData = 9; // image, file, audio data
 }

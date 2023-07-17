@@ -20,7 +20,6 @@ type Trip interface {
 	Create(trip core.Trip) (int64, error)
 	GetById(tripId int64) (core.Trip, error)
 	Delete(userId, tripId int64) (int64, error)
-	// Update(trip core.Trip) error
 	GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error)
 	GetJoinedTrips(userId int64) ([]core.Trip, error)
 	GetJoinedUsers(userId, tripId int64) ([]core.UserCtx, error)
@@ -28,6 +27,7 @@ type Trip interface {
 
 type Message interface {
 	Save(message protocol.Message) (int64, error)
+	FetchRoomMessages(roomId int64) ([]core.Message, error)
 }
 
 type Repository struct {

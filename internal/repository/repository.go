@@ -2,7 +2,6 @@ package repository
 
 import (
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
-	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -26,7 +25,7 @@ type Trip interface {
 }
 
 type Message interface {
-	Save(message protocol.Message) (int64, error)
+	Save(message core.Message) (int64, error)
 	FetchRoomMessages(roomId int64) ([]core.Message, error)
 }
 

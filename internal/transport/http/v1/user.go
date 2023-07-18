@@ -19,7 +19,7 @@ func (h *Handler) initUsersRoutes(api *gin.RouterGroup) {
 	{
 		jt := user.Group("/join_trip")
 		{
-			jt.GET("/req/:trip_id", h.userIdentity, h.redirectReqToBot)
+			jt.GET("/req/:id", h.userIdentity, h.redirectReqToBot)
 			jt.POST("/res", h.getResFromBot)
 		}
 	}
@@ -31,14 +31,13 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	trip_id, err := strconv.Atoi(c.Param("trip_id"))
+	tripId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	trip, err := h.services.Trip.GetById(int64(trip_id))
+	trip, err := h.services.Trip.GetById(tripId)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -47,7 +46,7 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 		AdminTgId:   trip.AdminTgId,
 		UserId:      uctx.UserId,
 		UserTgId:    uctx.TgId,
-		TripId:      int64(trip_id),
+		TripId:      tripId,
 		SecretToken: os.Getenv("BACKEND_SECRET_TOKEN"),
 		TripName:    getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp),
 	}

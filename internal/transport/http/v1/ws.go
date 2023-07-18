@@ -6,15 +6,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
-	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 	"github.com/itoqsky/InnoCoTravel-backend/pkg/response"
 )
 
 func (h *Handler) initWsRoutes(api *gin.RouterGroup) {
 	ws := api.Group("/ws")
 	{
-		ws.GET("/join_trip/:trip_id", h.joinTrip)
+		ws.GET("/join-trip/:id", h.joinTrip)
 	}
 }
 
@@ -27,12 +27,18 @@ var upgrader = websocket.Upgrader{
 }
 
 func (h *Handler) joinTrip(c *gin.Context) {
-	uctx, err := getUserCtx(c)
+	tripId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	tripId, err := strconv.Atoi(c.Param("trip_id"))
+
+	userId, err := strconv.ParseInt(c.Query("userId"), 10, 64)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	username := c.Query("username")
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -46,17 +52,19 @@ func (h *Handler) joinTrip(c *gin.Context) {
 
 	cl := &server.Client{
 		Conn:     conn,
-		Message:  make(chan *protocol.Message, 10),
-		Id:       uctx.UserId,
+		Message:  make(chan *core.Message, 10),
+		Id:       userId,
 		RoomId:   int64(tripId),
-		Username: uctx.Username,
+		Username: username,
 	}
 
-	m := &protocol.Message{
-		FromUsername: uctx.Username,
-		FromUserId:   uctx.UserId,
-		ToRoomId:     int64(tripId),
-		Content:      uctx.Username + " joined the room",
+	m := &core.Message{
+		FromUsername: username,
+		FromUserId:   userId,
+		ToRoomId:     tripId,
+		Content:      username + " joined the room",
+		ContentType:  core.TEXT,
+		Url:          "",
 	}
 
 	h.hub.Register <- cl

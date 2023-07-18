@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/repository"
-	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 )
 
 type MessageService struct {
@@ -14,7 +13,7 @@ func NewMessageService(repo repository.Message) *MessageService {
 	return &MessageService{repo: repo}
 }
 
-func (s *MessageService) Save(message protocol.Message) (int64, error) {
+func (s *MessageService) Save(message core.Message) (int64, error) {
 	return s.repo.Save(message)
 }
 

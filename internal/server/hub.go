@@ -1,10 +1,11 @@
 package server
 
 import (
+	"fmt"
 	"strconv"
 
+	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/service"
-	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 )
 
 type Room struct {
@@ -17,7 +18,7 @@ type Hub struct {
 	Rooms      map[int64]*Room
 	Register   chan *Client
 	Unregister chan *Client
-	Broadcast  chan *protocol.Message
+	Broadcast  chan *core.Message
 }
 
 func NewHub() *Hub {
@@ -25,11 +26,11 @@ func NewHub() *Hub {
 		Rooms:      make(map[int64]*Room),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
-		Broadcast:  make(chan *protocol.Message, 5),
+		Broadcast:  make(chan *core.Message, 5),
 	}
 }
 
-func (hub *Hub) ConsumerKafkaMsg(msg *protocol.Message) {
+func (hub *Hub) ConsumerKafkaMsg(msg *core.Message) {
 	hub.Broadcast <- msg
 }
 
@@ -49,8 +50,9 @@ func (h *Hub) Run(s *service.Service) {
 				clients := h.Rooms[cl.RoomId].Clients
 				if _, ok := clients[cl.Id]; ok {
 					if len(clients) != 0 {
-						h.Broadcast <- &protocol.Message{
+						h.Broadcast <- &core.Message{
 							Content:      "User " + cl.Username + " has left the room" + strconv.Itoa(int(cl.RoomId)),
+							ContentType:  core.TEXT,
 							FromUsername: "System",
 							FromUserId:   0,
 							ToRoomId:     cl.RoomId,
@@ -67,6 +69,7 @@ func (h *Hub) Run(s *service.Service) {
 					s.Message.Save(*m)
 				}
 				for _, cl := range h.Rooms[m.ToRoomId].Clients {
+					fmt.Printf("\n%v <- %v\n", cl, m)
 					cl.Message <- m
 				}
 			}

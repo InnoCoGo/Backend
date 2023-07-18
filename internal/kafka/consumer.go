@@ -1,17 +1,18 @@
 package kafka
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/Shopify/sarama"
-	"github.com/gogo/protobuf/proto"
-	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/sirupsen/logrus"
 )
 
 var consumer sarama.Consumer
 
-type ConsumerCallback func(msg *protocol.Message)
+type ConsumerCallback func(msg *core.Message)
 
 func InitConsumer(hosts string) {
 	config := sarama.NewConfig()
@@ -37,12 +38,14 @@ func Consume(callBack ConsumerCallback) {
 	for {
 		rawMsg := <-partitionConsumer.Messages()
 		if nil != callBack {
-			msg := &protocol.Message{}
-			err := proto.Unmarshal(rawMsg.Value, msg)
+			msg := &core.Message{}
+			// proto.Unmarshal(rawMsg.Value, msg)
+			err = json.Unmarshal(rawMsg.Value, msg)
 			if nil != err {
 				logrus.Errorf("unmarshal message error: %s", err.Error())
 				continue
 			}
+			fmt.Printf("CONSUMERING: %v", msg)
 
 			callBack(msg)
 		}

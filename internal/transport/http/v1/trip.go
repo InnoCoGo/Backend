@@ -127,13 +127,13 @@ func (h *Handler) getTrip(c *gin.Context) {
 	// 	return
 	// }
 
-	tripId, err := strconv.Atoi(c.Param("id"))
+	tripId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	trip, err := h.services.Trip.GetById(int64(tripId))
+	trip, err := h.services.Trip.GetById(tripId)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -149,13 +149,13 @@ func (h *Handler) deleteTrip(c *gin.Context) {
 		return
 	}
 
-	tripId, err := strconv.Atoi(c.Param("id"))
+	tripId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	newAdminId, err := h.services.Trip.Delete(uctx.UserId, int64(tripId))
+	newAdminId, err := h.services.Trip.Delete(uctx.UserId, tripId)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -189,13 +189,13 @@ func (h *Handler) getJoinedUsers(c *gin.Context) {
 		return
 	}
 
-	tripId, err := strconv.Atoi(c.Param("id"))
+	tripId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	users, err := h.services.Trip.GetJoinedUsers(uctx.UserId, int64(tripId))
+	users, err := h.services.Trip.GetJoinedUsers(uctx.UserId, tripId)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

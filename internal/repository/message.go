@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
-	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -16,19 +15,11 @@ func NewMessagePostgres(db *sqlx.DB) *MessagePostgres {
 	return &MessagePostgres{db: db}
 }
 
-func (r *MessagePostgres) Save(message protocol.Message) (int64, error) {
+func (r *MessagePostgres) Save(msg core.Message) (int64, error) {
 	query := fmt.Sprintf(`INSERT INTO %s 
 	(user_id, room_id, content, content_type, url)
 						VAlUES
 	($1, $2, $3, $4, $5) RETURNING id`, messagesTable)
-
-	msg := core.Message{
-		FromUserId:  message.FromUserId,
-		ToRoomId:    message.ToRoomId,
-		Content:     message.Content,
-		ContentType: int8(message.ContentType),
-		Url:         message.Url,
-	}
 
 	var id int64
 	row := r.db.QueryRow(query, msg.FromUserId, msg.ToRoomId, msg.Content, msg.ContentType, msg.Url)

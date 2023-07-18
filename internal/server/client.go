@@ -1,18 +1,19 @@
 package server
 
 import (
-	"log"
+	"encoding/json"
+	"fmt"
 
 	"github.com/gorilla/websocket"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/kafka"
-	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 type Client struct {
 	Conn     *websocket.Conn
-	Message  chan *protocol.Message
+	Message  chan *core.Message
 	Id       int64  `json:"client_id"`
 	Username string `json:"username"`
 	RoomId   int64  `json:"room_id"`
@@ -44,13 +45,20 @@ func (c *Client) ReadMessage(hub *Hub) {
 			break
 		}
 
-		msg := &protocol.Message{
-			Content:      string(msgPack),
-			FromUsername: c.Username,
-			FromUserId:   c.Id,
-			ToRoomId:     c.RoomId,
+		// msg := &protocol.Message{
+		// 	FromUsername: c.Username,
+		// 	FromUserId:   c.Id,
+		// 	ToRoomId:     c.RoomId,
+		// 	Content:      string(msgPack),
+		// }
+
+		msg := &core.Message{}
+		err = json.Unmarshal(msgPack, msg)
+		if err != nil {
+			logrus.Error(err.Error() + " ERROR1")
 		}
-		log.Print(msg)
+
+		fmt.Printf("KELDI READMESSAGE -> PRODUCING: %v\n", msg)
 
 		if viper.GetBool("kafka.enabled") {
 			kafka.Produce(msgPack)

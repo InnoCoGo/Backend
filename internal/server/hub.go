@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
@@ -57,30 +56,25 @@ func (h *Hub) Run(s *service.Service) {
 				logrus.Errorf("getting from BROADCAST, GetJoinedUsers() %s", err.Error())
 				continue
 			}
-			fmt.Printf("\nKirdi BROADCAS-qa: %v ---- %v \n", members, msg)
 
-			for _, member := range members {
-				if member.UserId == msg.FromUserId || msg.FromUserId == 0 {
+			// Saving messages will only be saved on one end of the socket to prevent message duplication after distributed deployment
+			if _, ok := h.Clients[msg.FromUserId]; ok && msg.ContentType != core.INFO {
+				id, err := s.Message.Save(*msg)
+				if err != nil {
+					logrus.Errorf(err.Error())
 					continue
 				}
+				msg.Id = id
+			}
+			// fmt.Printf("\nKirdi BROADCAS-qa: %v ---- %v \n", members, msg)
+			for _, member := range members {
 				cl, ok := h.Clients[member.UserId]
-				if !ok {
-					s.Message.Save(*msg)
+				if member.UserId == msg.FromUserId || !ok {
 					continue
 				}
 
 				cl.Message <- msg
 			}
-			// if _, ok := h.Rooms[m.ToRoomId]; ok {
-			// 	_, exits := h.Rooms[m.FromUserId]
-			// 	if exits && m.FromUserId != 0 {
-			// 		s.Message.Save(*m)
-			// 	}
-			// 	for _, cl := range h.Rooms[m.ToRoomId].Clients {
-			// 		fmt.Printf("\n%v <- %v\n", cl, m)
-			// 		cl.Message <- m
-			// 	}
-			// }
 		}
 	}
 }

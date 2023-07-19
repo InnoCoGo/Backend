@@ -13,6 +13,7 @@ type Message struct {
 
 const (
 	TEXT = iota
+	INFO
 	IMAGE
 	VIDEO
 	AUDIO

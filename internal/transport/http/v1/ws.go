@@ -75,7 +75,7 @@ func (h *Handler) joinTrip(c *gin.Context) {
 		FromUserId:   uctx.UserId,
 		ToRoomId:     tripId,
 		Content:      uctx.Username + " joined the room",
-		ContentType:  core.TEXT,
+		ContentType:  core.INFO,
 		Url:          "",
 	}
 

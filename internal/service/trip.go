@@ -18,7 +18,7 @@ func (s *TripService) Create(trip core.Trip) (int64, error) {
 }
 
 func (s *TripService) GetById(userId, tripId int64) (core.Trip, error) {
-	return s.repo.GetById(tripId)
+	return s.repo.GetById(userId, tripId)
 }
 
 func (s *TripService) Delete(userId, tripId int64) (int64, error) {

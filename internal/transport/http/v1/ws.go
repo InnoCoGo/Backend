@@ -44,6 +44,12 @@ func (h *Handler) joinTrip(c *gin.Context) {
 		return
 	}
 
+	_, err = h.services.Trip.GetById(userId, tripId)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

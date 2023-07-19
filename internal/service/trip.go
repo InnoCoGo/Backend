@@ -17,7 +17,7 @@ func (s *TripService) Create(trip core.Trip) (int64, error) {
 	return s.repo.Create(trip)
 }
 
-func (s *TripService) GetById(tripId int64) (core.Trip, error) {
+func (s *TripService) GetById(userId, tripId int64) (core.Trip, error) {
 	return s.repo.GetById(tripId)
 }
 

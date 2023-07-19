@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
-	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
 	"github.com/itoqsky/InnoCoTravel-backend/pkg/response"
 )
 
@@ -71,12 +70,6 @@ func (h *Handler) createTrip(c *gin.Context) {
 		return
 	}
 
-	h.hub.Rooms[tripId] = &server.Room{
-		Id:      tripId,
-		Name:    getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp),
-		Clients: make(map[int64]*server.Client),
-	}
-
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"trip_id": tripId,
 	})
@@ -121,11 +114,11 @@ func (h *Handler) getJoinedTrips(c *gin.Context) {
 }
 
 func (h *Handler) getTrip(c *gin.Context) {
-	// uctx, err := getUserCtx(c)
-	// if err != nil {
-	// 	response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
-	// 	return
-	// }
+	uctx, err := getUserCtx(c)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
 
 	tripId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -133,7 +126,7 @@ func (h *Handler) getTrip(c *gin.Context) {
 		return
 	}
 
-	trip, err := h.services.Trip.GetById(tripId)
+	trip, err := h.services.Trip.GetById(uctx.UserId, tripId)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

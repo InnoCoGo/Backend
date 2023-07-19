@@ -17,7 +17,7 @@ type User interface {
 
 type Trip interface {
 	Create(trip core.Trip) (int64, error)
-	GetById(tripId int64) (core.Trip, error)
+	GetById(userId, tripId int64) (core.Trip, error)
 	Delete(userId, tripId int64) (int64, error)
 	GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error)
 	GetJoinedTrips(userId int64) ([]core.Trip, error)

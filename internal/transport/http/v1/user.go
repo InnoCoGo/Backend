@@ -37,7 +37,7 @@ func (h *Handler) redirectReqToBot(c *gin.Context) {
 		return
 	}
 
-	trip, err := h.services.Trip.GetById(tripId)
+	trip, err := h.services.Trip.GetById(uctx.UserId, tripId)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

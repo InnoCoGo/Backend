@@ -44,10 +44,15 @@ func (r *TripPostgres) Create(trip core.Trip) (int64, error) {
 	return id, tx.Commit()
 }
 
-func (r *TripPostgres) GetById(tripId int64) (core.Trip, error) {
+func (r *TripPostgres) GetById(userId, tripId int64) (core.Trip, error) {
 	var trip core.Trip
-	query := fmt.Sprintf(`SELECT * FROM %s t WHERE t.id=$1`, tripsTable)
-	err := r.db.Get(&trip, query, tripId)
+	query := fmt.Sprintf(`SELECT t.* FROM %s t 
+						INNER JOIN %s ut 
+						ON 
+							t.id=ut.user_id 
+						WHERE 
+							ut.user_id=$1 and ut.trip_id=$2`, tripsTable, usersTripsTable)
+	err := r.db.Get(&trip, query, userId, tripId)
 	return trip, err
 }
 

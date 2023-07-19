@@ -12,7 +12,7 @@ import (
 )
 
 func (h *Handler) initWsRoutes(api *gin.RouterGroup) {
-	ws := api.Group("/ws")
+	ws := api.Group("/ws", h.userIdentity)
 	{
 		ws.GET("/join-trip/:id", h.joinTrip)
 	}
@@ -27,24 +27,30 @@ var upgrader = websocket.Upgrader{
 }
 
 func (h *Handler) joinTrip(c *gin.Context) {
+	uctx, err := getUserCtx(c)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	tripId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	userId, err := strconv.ParseInt(c.Query("userId"), 10, 64)
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	username := c.Query("username")
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
+	// userId, err := strconv.ParseInt(c.Query("userId"), 10, 64)
+	// if err != nil {
+	// 	response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+	// 	return
+	// }
+	// username := c.Query("username")
+	// if err != nil {
+	// 	response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
+	// 	return
+	// }
 
-	_, err = h.services.Trip.GetById(userId, tripId)
+	_, err = h.services.Trip.GetById(uctx.UserId, tripId)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -59,16 +65,16 @@ func (h *Handler) joinTrip(c *gin.Context) {
 	cl := &server.Client{
 		Conn:     conn,
 		Message:  make(chan *core.Message, 10),
-		Id:       userId,
-		RoomId:   int64(tripId),
-		Username: username,
+		Id:       uctx.UserId,
+		Username: uctx.Username,
+		RoomId:   tripId,
 	}
 
 	m := &core.Message{
-		FromUsername: username,
-		FromUserId:   userId,
+		FromUsername: uctx.Username,
+		FromUserId:   uctx.UserId,
 		ToRoomId:     tripId,
-		Content:      username + " joined the room",
+		Content:      uctx.Username + " joined the room",
 		ContentType:  core.TEXT,
 		Url:          "",
 	}

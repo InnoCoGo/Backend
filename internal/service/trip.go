@@ -33,6 +33,6 @@ func (s *TripService) GetJoinedTrips(userId int64) ([]core.Trip, error) {
 	return s.repo.GetJoinedTrips(userId)
 }
 
-func (s *TripService) GetJoinedUsers(userId, tripId int64) ([]core.UserCtx, error) {
-	return s.repo.GetJoinedUsers(userId, tripId)
+func (s *TripService) GetJoinedUsers(tripId int64) ([]core.UserCtx, error) {
+	return s.repo.GetJoinedUsers(tripId)
 }

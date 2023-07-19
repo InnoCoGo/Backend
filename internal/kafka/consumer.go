@@ -45,7 +45,7 @@ func Consume(callBack ConsumerCallback) {
 				logrus.Errorf("unmarshal message error: %s", err.Error())
 				continue
 			}
-			fmt.Printf("CONSUMERING: %v", msg)
+			fmt.Printf("CONSUMERING: %v\n", msg)
 
 			callBack(msg)
 		}

@@ -49,7 +49,7 @@ func (r *TripPostgres) GetById(userId, tripId int64) (core.Trip, error) {
 	query := fmt.Sprintf(`SELECT t.* FROM %s t 
 						INNER JOIN %s ut 
 						ON 
-							t.id=ut.user_id 
+							t.id=ut.trip_id
 						WHERE 
 							ut.user_id=$1 and ut.trip_id=$2`, tripsTable, usersTripsTable)
 	err := r.db.Get(&trip, query, userId, tripId)
@@ -175,17 +175,16 @@ func (r *TripPostgres) GetJoinedTrips(userId int64) ([]core.Trip, error) {
 	return dest, err
 }
 
-func (r *TripPostgres) GetJoinedUsers(userId, tripId int64) ([]core.UserCtx, error) {
+func (r *TripPostgres) GetJoinedUsers(tripId int64) ([]core.UserCtx, error) {
 	var dest []core.UserCtx
 	query := fmt.Sprintf(`SELECT u.id, u.username
 						FROM 
 							%s u
 						INNER JOIN %s ut
 							ON  ut.user_id = u.id
-						WHERE ut.user_id=$1
-							AND ut.trip_id=$2
+						WHERE ut.trip_id=$1
 	`, usersTable, usersTripsTable)
-	err := r.db.Select(&dest, query, userId, tripId)
+	err := r.db.Select(&dest, query, tripId)
 
 	return dest, err
 }

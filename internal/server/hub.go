@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
@@ -51,15 +52,20 @@ func (h *Hub) Run(s *service.Service) {
 				close(cl.Message)
 			}
 		case msg := <-h.Broadcast:
-			members, err := s.Trip.GetJoinedUsers(msg.FromUserId, msg.ToRoomId)
+			members, err := s.Trip.GetJoinedUsers(msg.ToRoomId)
 			if err != nil {
 				logrus.Errorf("getting from BROADCAST, GetJoinedUsers() %s", err.Error())
 				continue
 			}
+			fmt.Printf("\nKirdi BROADCAS-qa: %v ---- %v \n", members, msg)
 
-			for _, m := range members {
-				cl, ok := h.Clients[m.UserId]
-				if !ok || msg.FromUserId != 0 {
+			for _, member := range members {
+				if member.UserId == msg.FromUserId || msg.FromUserId == 0 {
+					continue
+				}
+				cl, ok := h.Clients[member.UserId]
+				if !ok {
+					s.Message.Save(*msg)
 					continue
 				}
 

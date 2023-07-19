@@ -30,7 +30,7 @@ type Trip interface {
 
 	GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error)
 	GetJoinedTrips(userId int64) ([]core.Trip, error)
-	GetJoinedUsers(userId, tripId int64) ([]core.UserCtx, error)
+	GetJoinedUsers(tripId int64) ([]core.UserCtx, error)
 }
 
 type Message interface {

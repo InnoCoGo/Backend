@@ -151,7 +151,7 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 			return
 		}
 		for k, v := range userField {
-			if k != "first_name" && k != "last_name" && k != "username" && k != "id" && k != "language_code" {
+			if k != "first_name" && k != "last_name" && k != "username" && k != "id" && k != "language_code" && k != "allows_write_to_pm" {
 				response.NewErrorResponse(c, http.StatusBadRequest, "incorrect keys of user field from telegram webapp")
 				return
 			}

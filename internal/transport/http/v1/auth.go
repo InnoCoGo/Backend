@@ -161,6 +161,11 @@ func (h *Handler) tgLogIn(c *gin.Context) {
 					return
 				}
 				userField[k] = int64(v.(float64))
+			} else if k == "allows_write_to_pm" {
+				if _, ok := v.(bool); !ok {
+					response.NewErrorResponse(c, http.StatusBadRequest, "incorrect value of allows_write_to_pm in user field from telegram webapp")
+					return
+				}
 			} else {
 				if _, ok := v.(string); !ok {
 					response.NewErrorResponse(c, http.StatusBadRequest, "incorrect assertion string in user field from telegram webapp")

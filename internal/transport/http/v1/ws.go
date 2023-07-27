@@ -39,17 +39,6 @@ func (h *Handler) joinTrip(c *gin.Context) {
 		return
 	}
 
-	// userId, err := strconv.ParseInt(c.Query("userId"), 10, 64)
-	// if err != nil {
-	// 	response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-	// 	return
-	// }
-	// username := c.Query("username")
-	// if err != nil {
-	// 	response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
-	// 	return
-	// }
-
 	_, err = h.services.Trip.GetById(uctx.UserId, tripId)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())

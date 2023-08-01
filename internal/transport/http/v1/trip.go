@@ -1,12 +1,17 @@
 package v1
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/itoqsky/InnoCoTravel-backend/docs"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
+	"github.com/itoqsky/InnoCoTravel-backend/internal/server"
+	"github.com/itoqsky/InnoCoTravel-backend/pkg/response"
+	tr "github.com/snakesel/libretranslate"
 )
 
 func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
@@ -23,43 +28,56 @@ func (h *Handler) initTripsRoutes(api *gin.RouterGroup) {
 	}
 }
 
-// createTrip 	godoc
-//
-//	@Summary		Create trip
-//	@Tags			trips
-//	@Description	create trip
-//	@Security		ApiKeyAuth
-//	@ID				create-trip
-//	@Accept			json
-//	@Produce		json
-//	@Param			createInput	body		core.Trip	true	"trip info"
-//	@Success		200			{integer}	integer
-//	@Failure		400			{object}	errorResponse
-//	@Failure		404			{object}	errorResponse
-//	@Failure		500			{object}	errorResponse
-//	@Failure		default		{object}	errorResponse
-//	@Router			/trips [post]
+type CreateRoomReq struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
 
 func (h *Handler) createTrip(c *gin.Context) {
 	uctx, err := getUserCtx(c)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	var trip core.Trip
 	if err := c.BindJSON(&trip); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	trip.AdminId = uctx.UserId
 	trip.AdminUsername = uctx.Username
+	trip.AdminTgId = uctx.TgId
+
+	if len(trip.Description) > 0 {
+		langId := identifyLang(trip.Description)
+		translater := tr.New(tr.Config{
+			Url: os.Getenv("TRANSLATE_URL"),
+			Key: os.Getenv("TRANSLATE_API_KEY"),
+		})
+		translated, err := translater.Translate(trip.Description, getLang(langId), getLang(!langId))
+		if err != nil {
+			response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		trip.TranslatedDesc = translated
+		if langId {
+			trip.Description, trip.TranslatedDesc = trip.TranslatedDesc, trip.Description
+		}
+	}
 
 	tripId, err := h.services.Trip.Create(trip)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
+	}
+
+	h.hub.Rooms[tripId] = &server.Room{
+		Id:      tripId,
+		Name:    getTripName(trip.FromPoint, trip.ToPoint, trip.ChosenTimestamp),
+		Clients: make(map[int64]*server.Client),
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
@@ -67,108 +85,82 @@ func (h *Handler) createTrip(c *gin.Context) {
 	})
 }
 
-// 	getJoinedTrips 			godoc
-//	@Summary		Get Joined Trips
-//	@Tags			trips
-//	@Description	get all trips
-//	@ID				getjoinedTrips
-//	@Security		ApiKeyAuth
-//	@Accept			json
-//	@Produce		json
-//	@Param			getJoinedTrips	body		int	false	"bruh"
-//	@Success		200				{object}	dataResponse
-//	@Failure		400				{object}	errorResponse
-//	@Failure		404				{object}	errorResponse
-//	@Failure		500				{object}	errorResponse
-//	@Failure		default			{object}	errorResponse
-//	@Router			/trips [get]
+func getTripName(from, to int, timestamp string) string {
+	return fmt.Sprintf("%d -> %d at: %s", from, to, timestamp)
+}
+
+func identifyLang(text string) bool {
+	for _, r := range text {
+		if r > 127 {
+			return false
+		} else if 'a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' {
+			return true
+		}
+	}
+	return true
+}
+
+func getLang(langId bool) string {
+	if langId {
+		return "en"
+	}
+	return "ru"
+}
 
 func (h *Handler) getJoinedTrips(c *gin.Context) {
 	uctx, err := getUserCtx(c)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	trips, err := h.services.Trip.GetJoinedTrips(uctx.UserId)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, dataResponse{Data: trips})
+	c.JSON(http.StatusOK, response.DataResponse{Data: trips})
 }
 
-// 	getTrip 			godoc
-//	@Summary		Get Trip
-//	@Tags			trips
-//	@Description	get trip
-//	@Security		ApiKeyAuth
-//	@ID				get-trip
-//	@Accept			json
-//	@Produce		json
-//	@Param			id		path		int	true	"Trip ID"
-//	@Success		200		{object}	core.Trip
-//	@Failure		400		{object}	errorResponse
-//	@Failure		404		{object}	errorResponse
-//	@Failure		500		{object}	errorResponse
-//	@Failure		default	{object}	errorResponse
-//	@Router			/trips/{id} [get]
-
 func (h *Handler) getTrip(c *gin.Context) {
-	uctx, err := getUserCtx(c)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
+	// uctx, err := getUserCtx(c)
+	// if err != nil {
+	// 	response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+	// 	return
+	// }
 
 	tripId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	trip, err := h.services.Trip.GetById(uctx.UserId, tripId)
+	trip, err := h.services.Trip.GetById(int64(tripId))
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, trip)
 }
 
-// 	deleteTrip 			godoc
-//	@Summary		Delete Trip
-//	@Tags			trips
-//	@Description	delete trip
-//	@Security		ApiKeyAuth
-//	@ID				delete-trip
-//	@Accept			json
-//	@Produce		json
-//	@Param			id		path		int	true	"Trip ID"
-//	@Success		200		{object}	integer
-//	@Failure		400		{object}	errorResponse
-//	@Failure		404		{object}	errorResponse
-//	@Failure		500		{object}	errorResponse
-//	@Failure		default	{object}	errorResponse
-//	@Router			/trips/{id} [delete]
-
 func (h *Handler) deleteTrip(c *gin.Context) {
 	uctx, err := getUserCtx(c)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	tripId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	newAdminId, err := h.services.Trip.Delete(uctx.UserId, tripId)
+	newAdminId, err := h.services.Trip.Delete(uctx.UserId, int64(tripId))
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -177,56 +169,40 @@ func (h *Handler) deleteTrip(c *gin.Context) {
 	})
 }
 
-// 	getAdjacentTrips 		godoc
-//	@Summary		Get Adjacent Trips
-//	@Tags			trips
-//	@Description	Get Adjacent Trips
-//	@Security		ApiKeyAuth
-//	@ID				get-adjacent-trips
-//	@Accept			json
-//	@Produce		json
-//	@Param			getAdjacentTrips	body		core.InputAdjTrips	true	"adj trip info"
-//	@Success		200					{object}	dataResponse
-//	@Failure		400					{object}	errorResponse
-//	@Failure		404					{object}	errorResponse
-//	@Failure		500					{object}	errorResponse
-//	@Failure		default				{object}	errorResponse
-//	@Router			/trips/adjacent [put]
-
 func (h *Handler) getAdjacentTrips(c *gin.Context) {
 	var input core.InputAdjTrips
 	if err := c.BindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	trips, err := h.services.Trip.GetAdjTrips(input)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, dataResponse{Data: trips})
+	c.JSON(http.StatusOK, response.DataResponse{Data: trips})
 }
 
 func (h *Handler) getJoinedUsers(c *gin.Context) {
 	uctx, err := getUserCtx(c)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	tripId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	users, err := h.services.Trip.GetJoinedUsers(uctx.UserId, tripId)
+	users, err := h.services.Trip.GetJoinedUsers(uctx.UserId, int64(tripId))
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, dataResponse{Data: users})
+	c.JSON(http.StatusOK, response.DataResponse{Data: users})
 }

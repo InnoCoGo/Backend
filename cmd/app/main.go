@@ -21,22 +21,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-//	@title			InnoCoTravel API
-//	@version		1.0
-//	@description	REST API for InnoCoTravel App
-
-//	@Server	localhost:8000 Server 1
-
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-
-//	@host		localhost:8000
-//	@BasePath	/api/v1
-
-//	@securityDefinitions.apikey	ApiKeyAuth
-//	@in							header
-//	@name						Authorization
-
 func main() {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 
@@ -60,15 +44,21 @@ func main() {
 		DBName:   viper.GetString("db.dbname"),
 		SSLMode:  viper.GetString("db.sslmode"),
 	})
-
 	if err != nil {
 		logrus.Fatalf("error occured while connecting  to db: %s", err.Error())
 		return
 	}
 
+	hub := server.NewHub()
+	go hub.Run()
+
+	// kafka.InitProducer(os.Getenv("KAFKA_TOPIC"), os.Getenv("KAFKA_HOSTS"))
+	// kafka.InitConsumer(os.Getenv("KAFKA_HOSTS"))
+	// go kafka.Consume(hub.ConsumerKafkaMsg)
+
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos)
-	handlers := transport.NewHandler(services)
+	handlers := transport.NewHandler(services, hub)
 
 	srv := server.NewServer(viper.GetString("port"), handlers.Init())
 

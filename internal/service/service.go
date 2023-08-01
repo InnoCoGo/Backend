@@ -3,11 +3,12 @@ package service
 import (
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/itoqsky/InnoCoTravel-backend/internal/repository"
+	"github.com/itoqsky/InnoCoTravel-backend/pkg/protocol"
 )
 
 type Authorization interface {
-	CreateUser(user core.User) (int, error)
-	GetUserId(user core.User) (int, error)
+	CreateUser(user core.User) (int64, error)
+	GetUserId(user core.User) (int64, error)
 
 	// GenerateToken(userId, tgId int) (string, error)
 	// ParseToken(accessToken string) (int, error)
@@ -18,24 +19,31 @@ type Authorization interface {
 }
 
 type User interface {
-	GetUserInfo(id int) (core.User, error)
+	GetUserInfo(id int64) (core.User, error)
+	JoinTrip(userId, tripId int64) error
 	// RateUser(core.User) (int, error)
 }
 
 type Trip interface {
-	Create(trip core.Trip) (int, error)
-	Delete(userId, tripId int) (int, error)
-	GetById(userId, tripId int) (core.Trip, error)
+	Create(trip core.Trip) (int64, error)
+	GetById(tripId int64) (core.Trip, error)
+	Delete(userId, tripId int64) (int64, error)
 
 	GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error)
-	GetJoinedTrips(userId int) ([]core.Trip, error)
-	GetJoinedUsers(userId, tripId int) ([]core.UserCtx, error)
+	GetJoinedTrips(userId int64) ([]core.Trip, error)
+	GetJoinedUsers(userId, tripId int64) ([]core.UserCtx, error)
+}
+
+type Message interface {
+	Save(message protocol.Message) (int64, error)
+	FetchRoomMessages(roomId int64) ([]core.Message, error)
 }
 
 type Service struct {
 	Authorization
 	User
 	Trip
+	Message
 }
 
 func NewService(repo *repository.Repository) *Service {
@@ -43,5 +51,6 @@ func NewService(repo *repository.Repository) *Service {
 		Authorization: NewAuthService(repo.Authorization),
 		User:          NewUserService(repo.User),
 		Trip:          NewTripService(repo.Trip),
+		Message:       NewMessageService(repo.Message),
 	}
 }

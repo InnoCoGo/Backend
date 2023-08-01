@@ -10,3 +10,9 @@ db:
   username: "postgres"
   dbname: "postgres"
   sslmode: "disable"
+
+kafka:
+  enabled: true
+  brokers:
+    - "localhost:9092"
+  topic: "chat"

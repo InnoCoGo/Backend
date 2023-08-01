@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/itoqsky/InnoCoTravel-backend/internal/core"
 	"github.com/jmoiron/sqlx"
@@ -17,16 +18,16 @@ func NewTripPostgres(db *sqlx.DB) *TripPostgres {
 	return &TripPostgres{db: db}
 }
 
-func (r *TripPostgres) Create(trip core.Trip) (int, error) {
+func (r *TripPostgres) Create(trip core.Trip) (int64, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return 0, err
 	}
 
-	var id int
-	createTripQuery := fmt.Sprintf(`INSERT INTO %s (admin_id, admin_username, is_driver, places_max, places_taken, chosen_timestamp, from_point, to_point, description)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`, tripsTable)
-	row := tx.QueryRow(createTripQuery, trip.AdminId, trip.AdminUsername, trip.IsDriver, trip.PlacesMax, trip.PlacesTaken, trip.ChosenTimestamp, trip.FromPoint, trip.ToPoint, trip.Description)
+	var id int64
+	createTripQuery := fmt.Sprintf(`INSERT INTO %s (admin_id, admin_username, admin_tg_id, is_driver, places_max, places_taken, chosen_timestamp, from_point, to_point, description, translated_desc)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`, tripsTable)
+	row := tx.QueryRow(createTripQuery, trip.AdminId, trip.AdminUsername, trip.AdminTgId, trip.IsDriver, trip.PlacesMax, trip.PlacesTaken, trip.ChosenTimestamp, trip.FromPoint, trip.ToPoint, trip.Description, trip.TranslatedDesc)
 	if err := row.Scan(&id); err != nil {
 		tx.Rollback()
 		return 0, err
@@ -43,61 +44,88 @@ func (r *TripPostgres) Create(trip core.Trip) (int, error) {
 	return id, tx.Commit()
 }
 
-func (r *TripPostgres) GetById(userId, tripId int) (core.Trip, error) {
-	query := fmt.Sprintf(`SELECT t.*
-						FROM 
-							%s t
-						INNER JOIN %s ut
-							ON  ut.trip_id = t.id
-						WHERE ut.user_id=$1
-							AND ut.trip_id=$2
-	`, tripsTable, usersTripsTable)
+func (r *TripPostgres) GetById(tripId int64) (core.Trip, error) {
 	var trip core.Trip
-	err := r.db.Get(&trip, query, userId, tripId)
-
+	query := fmt.Sprintf(`SELECT * FROM %s t WHERE t.id=$1`, tripsTable)
+	err := r.db.Get(&trip, query, tripId)
 	return trip, err
 }
 
-func (r *TripPostgres) Delete(userId, tripId int) (int, error) {
+func (r *TripPostgres) Delete(userId, tripId int64) (int64, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return 0, err
 	}
 
-	usersTripsQuery := fmt.Sprintf(`DELETE FROM %s ut WHERE ut.user_id=$1 AND ut.trip_id=$2`, usersTripsTable)
-	_, err = tx.Exec(usersTripsQuery, userId, tripId)
+	var adminId, adminTgId int64
+	var adminUsername string
+	var placesTaken int
+	getTripQuery := fmt.Sprintf(`SELECT t.admin_id, t.admin_username, t.admin_tg_id, t.places_taken FROM %s t INNER JOIN %s ut ON ut.trip_id=t.id WHERE ut.trip_id=$1 AND ut.user_id=$2`, tripsTable, usersTripsTable)
+	row := tx.QueryRow(getTripQuery, tripId, userId)
+	if err := row.Scan(&adminId, &adminUsername, &adminTgId, &placesTaken); err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+
+	deleteUserQuery := fmt.Sprintf(`DELETE FROM %s ut WHERE ut.user_id=$1 AND ut.trip_id=$2`, usersTripsTable)
+	_, err = tx.Exec(deleteUserQuery, userId, tripId)
 	if err != nil {
 		tx.Rollback()
 		return 0, err
 	}
 
-	var newAdminId int
-	nextAdminQuery := fmt.Sprintf(`SELECT ut.user_id FROM %s ut WHERE ut.trip_id=$1`, usersTripsTable)
-	row := tx.QueryRow(nextAdminQuery, tripId)
-
-	if err := row.Scan(&newAdminId); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			tripQuery := fmt.Sprintf(`DELETE FROM %s t WHERE t.id=$1 AND t.places_taken=0`, tripsTable)
-			_, err = tx.Exec(tripQuery, tripId)
-			if err != nil {
-				tx.Rollback()
-				return 0, err
-			}
-		} else {
-			tx.Rollback()
-			return 0, err
-		}
-	} else {
-		setValues := `admin_id=$1`
-		nextAdminQuery = fmt.Sprintf(`UPDATE %s SET %s WHERE t.id=$2`, tripsTable, setValues)
-		_, err = tx.Exec(nextAdminQuery, newAdminId)
+	if adminId == userId {
+		newAdminId, newAdminUsername, newAdminTgId, err := r.chooseNewAdmin(tx, tripId)
 		if err != nil {
 			tx.Rollback()
 			return 0, err
 		}
+		if newAdminId == 0 {
+			return 0, tx.Commit()
+		}
+		adminId = newAdminId
+		adminUsername = newAdminUsername
+		adminTgId = newAdminTgId
+	}
+	placesTaken--
+
+	setValues := `admin_id=$1, admin_username=$2, admin_tg_id=$3, places_taken=$4`
+	deleteTripQuery := fmt.Sprintf(`UPDATE %s SET %s WHERE id=$5`, tripsTable, setValues)
+	_, err = tx.Exec(deleteTripQuery, adminId, adminUsername, adminTgId, placesTaken, tripId)
+	if err != nil {
+		log.Printf("\nAAAA\n")
+		tx.Rollback()
+		return 0, err
 	}
 
-	return newAdminId, tx.Commit()
+	// log.Printf("\n %v | %v | %v \n", adminId, adminUsername, adminTgId)
+
+	return adminId, tx.Commit()
+}
+
+func (r *TripPostgres) chooseNewAdmin(tx *sql.Tx, tripId int64) (newAdminId int64, newAdminUsername string, newAdminTgId int64, err error) {
+	nextAdminQuery := fmt.Sprintf(`SELECT u.id, u.username, u.tg_id 
+								FROM 
+									%s u 
+								INNER JOIN 
+									%s ut
+								ON ut.user_id=u.id
+								WHERE
+									ut.trip_id=$1`, usersTable, usersTripsTable)
+	row := tx.QueryRow(nextAdminQuery, tripId)
+
+	if err = row.Scan(&newAdminId, &newAdminUsername, &newAdminTgId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			tripQuery := fmt.Sprintf(`DELETE FROM %s t WHERE t.id=$1`, tripsTable)
+			_, err = tx.Exec(tripQuery, tripId)
+			if err != nil {
+				return 0, "", 0, err
+			}
+		} else {
+			return 0, "", 0, err
+		}
+	}
+	return newAdminId, newAdminUsername, newAdminTgId, nil
 }
 
 // func (r *TripPostgres) Update(trip core.Trip) error {
@@ -129,7 +157,7 @@ func (r *TripPostgres) GetAdjTrips(input core.InputAdjTrips) ([]core.Trip, error
 	return trips, err
 }
 
-func (r *TripPostgres) GetJoinedTrips(userId int) ([]core.Trip, error) {
+func (r *TripPostgres) GetJoinedTrips(userId int64) ([]core.Trip, error) {
 	var dest []core.Trip
 	query := fmt.Sprintf(`SELECT t.*
 						FROM 
@@ -142,7 +170,7 @@ func (r *TripPostgres) GetJoinedTrips(userId int) ([]core.Trip, error) {
 	return dest, err
 }
 
-func (r *TripPostgres) GetJoinedUsers(userId, tripId int) ([]core.UserCtx, error) {
+func (r *TripPostgres) GetJoinedUsers(userId, tripId int64) ([]core.UserCtx, error) {
 	var dest []core.UserCtx
 	query := fmt.Sprintf(`SELECT u.id, u.username
 						FROM 

@@ -33,18 +33,19 @@ const (
 
 type TokenClaims struct {
 	jwt.StandardClaims
-	UserId   int    `json:"user_id"`
+	UserId   int64  `json:"user_id"`
 	Username string `json:"username"`
+	UserTgId int64  `json:"user_tg_id"`
 }
 
-func (s *AuthService) CreateUser(user core.User) (int, error) {
+func (s *AuthService) CreateUser(user core.User) (int64, error) {
 	if user.PasswordOrHash != "" {
 		user.PasswordOrHash = generatePasswordHash(user.PasswordOrHash)
 	}
 	return s.repo.CreateUser(user)
 }
 
-func (s *AuthService) GetUserId(user core.User) (int, error) {
+func (s *AuthService) GetUserId(user core.User) (int64, error) {
 	if user.PasswordOrHash != "" {
 		user.PasswordOrHash = generatePasswordHash(user.PasswordOrHash)
 	}
@@ -59,6 +60,7 @@ func (s *AuthService) GenerateToken(uctx core.UserCtx) (string, error) {
 		},
 		UserId:   uctx.UserId,
 		Username: uctx.Username,
+		UserTgId: uctx.TgId,
 	})
 
 	return token.SignedString([]byte(signInKey))
@@ -83,6 +85,7 @@ func (s *AuthService) ParseToken(accessToken string) (core.UserCtx, error) {
 	return core.UserCtx{
 		UserId:   claims.UserId,
 		Username: claims.Username,
+		TgId:     claims.UserTgId,
 	}, nil
 }
 
@@ -123,7 +126,7 @@ func (s *AuthService) VerifyTgAuthData(authData map[string]interface{}, keyword 
 	h.Write([]byte(dataCheckString))
 	hash := hex.EncodeToString(h.Sum(nil))
 
-	log.Printf("\nsecretkey: %s\nkeyword: %s\n", hex.EncodeToString(secretKey), keyword)
+	log.Printf("\nsecretkey: %s\nkeyword: %s\nhash: %s\nchechHash: %s", hex.EncodeToString(secretKey), keyword, hash, checkHash)
 
 	if hash != checkHash {
 		return false, fmt.Errorf("the hashes don't match")

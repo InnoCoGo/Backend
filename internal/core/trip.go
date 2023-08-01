@@ -1,9 +1,10 @@
 package core
 
 type Trip struct {
-	TripId          int    `json:"-" db:"id"`
-	AdminId         int    `json:"admin_id" db:"admin_id"`
+	TripId          int64  `json:"id" db:"id"`
+	AdminId         int64  `json:"admin_id" db:"admin_id"`
 	AdminUsername   string `json:"admin_username" db:"admin_username"`
+	AdminTgId       int64  `json:"admin_tg_id" db:"admin_tg_id"`
 	IsDriver        bool   `json:"is_driver" db:"is_driver" biding:"required"`
 	PlacesMax       int    `json:"places_max" db:"places_max" biding:"required"`
 	PlacesTaken     int    `json:"places_taken" db:"places_taken"`
@@ -11,6 +12,7 @@ type Trip struct {
 	FromPoint       int    `json:"from_point" db:"from_point" biding:"required"`
 	ToPoint         int    `json:"to_point" db:"to_point" biding:"required"`
 	Description     string `json:"description" db:"description"`
+	TranslatedDesc  string `json:"translated_desc" db:"translated_desc"`
 }
 
 type InputAdjTrips struct {

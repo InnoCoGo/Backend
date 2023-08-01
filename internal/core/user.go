@@ -1,17 +1,18 @@
 package core
 
 type User struct {
-	Id             int    `json:"-" db:"id"`
+	Id             int64  `json:"id" db:"id"`
 	FirstName      string `json:"first_name" db:"first_name" binding:"required"`
 	LastName       string `json:"last_name" db:"last_name" binding:"required"`
 	Username       string `json:"username" db:"username" binding:"required"`
 	PasswordOrHash string `json:"password" binding:"required"`
 	Rating         int    `json:"rating" db:"rating"`
 	NumPeopleRated int    `json:"num_people_rated" db:"num_people_rated"`
-	TgId           int    `json:"tg_id" db:"tg_id"`
+	TgId           int64  `json:"tg_id" db:"tg_id"`
 }
 
 type UserCtx struct {
-	UserId   int    `json:"user_id" db:"id"`
+	UserId   int64  `json:"user_id" db:"id"`
 	Username string `json:"username" db:"username"`
+	TgId     int64  `json:"tg_id" db:"tg_id"`
 }

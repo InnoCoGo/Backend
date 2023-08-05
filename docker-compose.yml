@@ -1,7 +1,62 @@
 version: '3.8'
 
 services:
+  bot:
+    image: innocotravel/telegram-bot:main
+    # flask requires SIGINT to stop gracefully
+    # (default stop signal from Compose is SIGTERM)
+    stop_signal: SIGINT
+    ports:
+      - 8443:443
+    environment:
+      - TG_BOT_TOKEN=${TG_BOT_TOKEN}
+      - CERT_FILE=${CERT_FILE}
+      - PKEY_FILE=${PKEY_FILE}
+      - HOST=${HOST}
+      - TG_SECRET_TOKEN=${TG_SECRET_TOKEN}
+      - PORT=${PORT}
+      - BACKEND_SECRET_TOKEN=${BACKEND_SECRET_TOKEN}
+      - BACKEND_URL=${BACKEND_URL}
+      - PERSISTENT_FOLDER=${PERSISTENT_FOLDER}
+    volumes:
+      - /root/innocotravel:/root/innocotravel
+    networks:
+      - innocogo
 
+  server:
+    image: innocotravel/backend:master
+    container_name: "inno-cotravel-be"
+    build: ./
+    volumes:
+      - inno-cotravel-be-vol:/root/
+    ports:
+      - 8000:8000
+    environment:
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - BOT_TOKEN=${BOT_TOKEN}
+      - TG_BOT_URL=${TG_BOT_URL}
+      - BACKEND_SECRET_TOKEN=${BACKEND_SECRET_TOKEN}
+      - TRANSLATE_URL=${TRANSLATE_URL}
+      - TRANSLATE_API_KEY=
+      - KAFKA_TOPIC=go-chat-message
+      - KAFKA_HOSTS=kafka:9092
+    depends_on:
+      - db
+    networks:
+      - innocogo
+
+  db:
+    restart: always
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 127.0.0.1:5432:5432
+    networks:
+      - innocogo
+  
   zookeeper:
     image: zookeeper
     ports:
@@ -19,30 +74,10 @@ services:
         KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
     depends_on:
         - zookeeper
-
-  server:
-    image: inno-cotravel-be
-    container_name: "inno-cotravel-be"
-    build: ./
-    volumes:
-      - inno-cotravel-be-vol:/root/
-    ports:
-      - 8000:8000
-    environment:
-      - DB_PASSWORD
-      - BOT_TOKEN
-    depends_on:
-      - db
-
-  db:
-    restart: always
-    image: postgres:latest
-    volumes:
-      - ./.build/volumes/databases/postgres/data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=qwerty
-    ports:
-      - 5432:5432
-
+        
 volumes:
   inno-cotravel-be-vol:
+
+networks:
+  innocogo:
+    external: true

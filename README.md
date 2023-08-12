@@ -1,7 +1,9 @@
 # InnoCoGo
 The carpooling/ridesharing application designed for residents of city Innopolis to organize economical and fast trips, find fellow travelers, and communicate seamlessly.
 
-#### Function list of MVP *(Telegram-webapp / Website)* [(demo)](https://www.youtube.com/watch?v=PdYihH5217Y)
+https://github.com/InnoCoTravel/Backend/assets/47076924/6b2a4b26-b279-4a9e-b82e-f79bb282e916
+
+#### Function list of MVP *(Telegram-webapp / Website)* 
 1. Telegram authentication
 2. Trip filtration
 3. Trip creation/deletion and joining/leaving
@@ -29,7 +31,7 @@ Backend Technologies and Frameworks
 - Makefile writing
 - PostgreSQL
 - Kafka
-- Docker/docker-compose
+- Docker, docker compose
 
 
 ### Frontend

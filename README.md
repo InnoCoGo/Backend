@@ -1,5 +1,14 @@
-# InnoCoGo
-The carpooling/ridesharing application designed for residents of city Innopolis to organize economical and fast trips, find fellow travelers, and communicate seamlessly.
+<p align="center">
+  <img width="25%" src="https://github.com/InnoCoGo/.github/blob/master/assets/banner/banner.svg" alt="Banner">
+</p>
+<p align="center">
+  <b>The carpooling application designed for residents of city Innopolis to organize economical and fast trips, find fellow travelers, and communicate seamlessly.</b>
+</p>
+<p align="center">
+  <a href="https://github.com/InnoCoGo/.github/edit/master/LICENSE.txt">
+    <img src="https://img.shields.io/github/license/InnoCoGo/.github" alt="License Badge">
+  </a>
+</p>
 
 ### Demo
 https://github.com/InnoCoTravel/Backend/assets/47076924/6b2a4b26-b279-4a9e-b82e-f79bb282e916

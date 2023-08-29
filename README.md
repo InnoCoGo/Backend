@@ -1,44 +1,51 @@
-# InnoCoGo
-The carpooling/ridesharing application designed for residents of city Innopolis to organize economical and fast trips, find fellow travelers, and communicate seamlessly.
+<p align="center">
+  <img width="25%" src="https://github.com/InnoCoGo/.github/blob/master/assets/banner/banner.svg" alt="Banner">
+</p>
+<p align="center">
+  <b>The carpooling application designed for residents of city Innopolis to organize economical and fast trips, find fellow travelers, and communicate seamlessly.</b>
+</p>
+<p align="center">
+  <a href="https://github.com/InnoCoGo/.github/edit/master/LICENSE.txt">
+    <img src="https://img.shields.io/github/license/InnoCoGo/.github" alt="License Badge">
+  </a>
+</p>
 
-### Demo
+## 🎬 Demo
 https://github.com/InnoCoTravel/Backend/assets/47076924/6b2a4b26-b279-4a9e-b82e-f79bb282e916
 
-#### Function list of MVP *(Telegram-webapp / Website)* 
-1. Telegram authentication
-2. Trip filtration
-3. Trip creation/deletion and joining/leaving
-4. Accepting/rejecting join request to the trip
-5. Notification
-6. Automatic translation of trip description
+## 📝 Project Features
 
-#### Function list of Final Product (Without Telegram)
-
-7. The list above+
-8. User rating/commenting
-9. Automatic group chat setup
-10. Voice message
-11. Fraud message detection ML
-12. Distributed deployment (through kafka global message queue, unified message delivery, the system can be expanded horizontally)
+| Feature                                      | Backend        | Frontend       |
+|----------------------------------------------|----------------|----------------|
+| 1. Telegram OAuth                           | ✔              | ✔               |
+| 2. Trip filtration                         | ✔              | ✔               |
+| 3. Trip creation/deletion and joining/leaving | ✔              | ✔               |
+| 4. Accepting/rejecting join requests         | ✔              | ✔               |
+| 5. Notifications                            | ✔              | ✔               |
+| 6. Automatic translation of trip description | ✔              | ✔               |
+| 7. User rating/commenting                   | ✔              |                |
+| 8. Automatic group chat setup               | ✔              |                |
+| 9. Voice message                            | ✔              |                |
+| 10. Fraud message detection (ML)            |                |                |
+| 11. Distributed deployment                  | ✔              |                |
 
 ### Backend
-The backend part of the application satisfies all the functions listed above, with the exception of "ML for detecting fraud messages".
+The backend part of the application satisfies all the functions listed above, with the exception of "Fraud message detection (ML)".
 
 Backend Technologies and Frameworks
-
-- Gin web framework
-- Long connection WebSocket (gorilla)
-- viper for configuration management
-- Makefile writing
+- Go
 - PostgreSQL
 - Kafka
-- Docker, docker compose
+- Docker
+- Long connection WebSockets
+- viper for configuration management
+- Makefile
 
 
 ### Frontend
 Currently [frontend](https://github.com/InnoCoTravel/Frontend ) the project includes only the MVP. The final product of this project is under development.
 
-## How to Run
+## 🏃‍♂️ How to Run
 #### LibreTranslate
 1. Clone https://github.com/LibreTranslate/LibreTranslate/tree/main into a directory
 2. Change the last line in run.sh from:

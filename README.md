@@ -35,13 +35,13 @@ The backend part of the application satisfies all the functions listed above, wi
 
 Backend Technologies and Frameworks
 
-- Gin web framework
-- Long connection WebSocket (gorilla)
-- viper for configuration management
-- Makefile writing
+- Go
 - PostgreSQL
 - Kafka
-- Docker, docker compose
+- Docker
+- Long connection WebSockets
+- viper for configuration management
+- Makefile writing
 
 
 ### Frontend

@@ -13,7 +13,7 @@
 ### Demo
 https://github.com/InnoCoTravel/Backend/assets/47076924/6b2a4b26-b279-4a9e-b82e-f79bb282e916
 
-#### Function list of MVP *(Telegram-webapp / Website)* 
+### Function list of MVP *(Telegram-webapp / Website)* 
 1. Telegram authentication
 2. Trip filtration
 3. Trip creation/deletion and joining/leaving
@@ -21,7 +21,7 @@ https://github.com/InnoCoTravel/Backend/assets/47076924/6b2a4b26-b279-4a9e-b82e-
 5. Notification
 6. Automatic translation of trip description
 
-#### Function list of Final Product (Without Telegram)
+### Function list of Final Product (Without Telegram)
 
 7. The list above+
 8. User rating/commenting
@@ -44,7 +44,7 @@ Backend Technologies and Frameworks
 - Makefile writing
 
 
-### Frontend
+## Frontend
 Currently [frontend](https://github.com/InnoCoTravel/Frontend ) the project includes only the MVP. The final product of this project is under development.
 
 ## How to Run

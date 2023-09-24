@@ -22,7 +22,7 @@ https://github.com/InnoCoTravel/Backend/assets/47076924/6b2a4b26-b279-4a9e-b82e-
 | 3. Trip creation/deletion and joining/leaving | ✔              | ✔               |
 | 4. Accepting/rejecting join requests         | ✔              | ✔               |
 | 5. Notifications                            | ✔              | ✔               |
-| 6. Automatic translation of trip description | ✔              | ✔               |
+| 6. Automatic translation of comments and trip description | ✔              | ✔               |
 | 7. User rating/commenting                   | ✔              |                |
 | 8. Automatic group chat setup               | ✔              |                |
 | 9. Voice message                            | ✔              |                |
